@@ -1,0 +1,138 @@
+Traceback (most recent call last):
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+sqlite3.OperationalError: no such column: students.challan_monthly_fee
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<string>", line 9, in <module>
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\testclient.py", line 518, in get
+    return super().get(
+           ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\httpx\_client.py", line 1053, in get
+    return self.request(
+           ^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\testclient.py", line 488, in request
+    return super().request(
+           ^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\httpx\_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\httpx\_client.py", line 914, in send
+    response = self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\httpx\_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\httpx\_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\httpx\_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\testclient.py", line 381, in handle_request
+    raise exc
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\testclient.py", line 378, in handle_request
+    portal.call(self.app, scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\from_thread.py", line 338, in call
+    return cast(T_Retval, self.start_task_soon(func, *args).result())
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\concurrent\futures\_base.py", line 456, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\from_thread.py", line 263, in _call_func
+    retval = await retval_or_awaitable
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\fastapi\applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\middleware\errors.py", line 187, in __call__
+    raise exc
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\middleware\errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\middleware\cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\middleware\exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\_exception_handler.py", line 62, in wrapped_app
+    raise exc
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\_exception_handler.py", line 51, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\_exception_handler.py", line 62, in wrapped_app
+    raise exc
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\_exception_handler.py", line 51, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\fastapi\routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\fastapi\routing.py", line 214, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\starlette\concurrency.py", line 39, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\_backends\_asyncio.py", line 2592, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\anyio\_backends\_asyncio.py", line 1029, in run
+    result = context.run(func, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\Desktop\The Smart School\backend\routers\dashboard.py", line 16, in get_stats
+    all_students = session.exec(select(Student)).all()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlmodel\orm\session.py", line 66, in exec
+    results = super().execute(
+              ^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\session.py", line 2373, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\session.py", line 2271, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\orm\context.py", line 306, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1421, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\sql\elements.py", line 526, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1643, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1848, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1988, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 2365, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\base.py", line 1969, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\abdul\AppData\Local\Programs\Python\Python311\Lib\site-packages\sqlalchemy\engine\default.py", line 952, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: students.challan_monthly_fee
+[SQL: SELECT students.name, students.class_applied_for, students.date_of_birth, students.contact_number, students.parent_relation, students.parent_name, students.id, students.registered_at, students.stage, students.age_at_registration, students.criteria_note, students.test_date, students.test_time, students.score_total_obtained, students.score_total_possible, students.score_subjects_json, students.decision, students.decision_at, students.gr_number, students.joined, students.not_joined_reason, students.challan_monthly_fee, students.challan_scholarship_pct, students.challan_sibling_discount_pct, students.challan_orphan_discount_pct, students.challan_admission_fee, students.challan_admission_scholarship_pct, students.challan_annual_fee, students.challan_security, students.challan_other_dues, students.challan_amount_paid 
+FROM students]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)

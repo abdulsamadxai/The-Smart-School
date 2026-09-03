@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Smart School — Admission Register</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --maroon: #6E1F24;
+    --maroon-dark: #4C1519;
+    --cream: #F6F1E6;
+    --paper: #FBF8F1;
+    --ink: #26221D;
+    --ink-soft: #5A5248;
+    --brass: #A6813C;
+    --brass-light: #C9A85E;
+    --line: #D8CFBB;
+    --error: #A3312A;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--maroon);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(255,255,255,0.05), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(0,0,0,0.15), transparent 45%);
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 32px 16px 64px;
+  }
+
+  .brand {
+    text-align: center;
+    color: var(--cream);
+    margin-bottom: 28px;
+  }
+  .brand .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brass-light);
+    margin-bottom: 6px;
+  }
+  .brand h1 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 40px;
+    margin: 0 0 4px;
+  }
+  .brand p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(246,241,230,0.75);
+    letter-spacing: 0.5px;
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .wrap { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- FORM (ledger) ---------- */
+  .ledger {
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    padding: 28px 28px 24px;
+    position: relative;
+    border-top: 6px solid var(--brass);
+  }
+  .ledger h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    margin: 0 0 4px;
+    color: var(--maroon-dark);
+  }
+  .ledger .sub {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
+    border-bottom: 1px dashed var(--line);
+    padding-bottom: 16px;
+  }
+
+  .field-group { margin-bottom: 14px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 5px;
+    font-weight: 600;
+  }
+  input {
+    width: 100%;
+    border: none;
+    border-bottom: 1.5px solid var(--line);
+    background: transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: 14.5px;
+    color: var(--ink);
+    padding: 6px 2px 8px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  input:focus {
+    border-bottom-color: var(--maroon);
+  }
+  input:focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 2px;
+  }
+  input::placeholder { color: #BEB5A3; }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin: 20px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .submit-btn {
+    margin-top: 22px;
+    width: 100%;
+    background: var(--maroon);
+    color: var(--cream);
+    border: none;
+    padding: 14px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: 0.4px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.05s ease;
+  }
+  .submit-btn:hover { background: var(--maroon-dark); }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.55; cursor: wait; }
+
+  .status-msg {
+    margin-top: 12px;
+    font-size: 13px;
+    text-align: center;
+    min-height: 18px;
+  }
+  .status-msg.error { color: var(--error); }
+  .status-msg.ok { color: #2F6B3A; }
+
+  /* ---------- LIVE PREVIEW ---------- */
+  .preview-card {
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    padding: 26px 26px 20px;
+    transform: rotate(0.4deg);
+    position: relative;
+  }
+  .tag {
+    position: absolute;
+    top: -14px;
+    left: 24px;
+    background: var(--brass);
+    color: var(--maroon-dark);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    padding: 5px 12px;
+    border-radius: 2px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  }
+  .p-header {
+    text-align: center;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+  }
+  .p-header .name {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--maroon-dark);
+  }
+  .p-header .campus {
+    text-decoration: underline;
+    font-size: 14px;
+    margin-top: 2px;
+  }
+  .p-header .tagline {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    padding: 2px 12px;
+    margin-top: 6px;
+  }
+  .p-row { display: flex; gap: 14px; font-size: 13.5px; margin-bottom: 10px; }
+  .p-field { flex: 1; display: flex; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+  .p-field .lbl { color: var(--ink-soft); white-space: nowrap; font-size: 12px; }
+  .p-field .val { font-family: 'JetBrains Mono', monospace; font-weight: 500; color: var(--ink); }
+  .p-empty { color: #C9BFA9; }
+
+  .cut {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #C9BFA9;
+    margin: 18px 0;
+    position: relative;
+  }
+  .cut::before, .cut::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 38%;
+    border-top: 1px dashed var(--line);
+  }
+  .cut::before { left: 0; }
+  .cut::after { right: 0; }
+
+  /* ---------- RESULT / PDF PANEL ---------- */
+  .result-panel {
+    display: none;
+    background: var(--paper);
+    border-radius: 4px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    padding: 20px;
+    margin-top: 20px;
+  }
+  .result-panel.show { display: block; }
+  .result-panel h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    margin: 0 0 12px;
+    color: var(--maroon-dark);
+  }
+  .result-panel iframe {
+    width: 100%;
+    height: 480px;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+  }
+  .result-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .result-actions button, .result-actions a {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1.5px solid var(--maroon);
+  }
+  .btn-print { background: var(--maroon); color: var(--cream); }
+  .btn-download { background: transparent; color: var(--maroon); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .preview-card { transform: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="brand">
+    <div class="eyebrow">Bara Kahu Campus · Islamabad</div>
+    <h1>The Smart School</h1>
+    <p>Admission Register — Front Desk</p>
+  </div>
+
+  <div class="wrap">
+    <!-- ENTRY FORM -->
+    <form class="ledger" id="admissionForm">
+      <h2>New Admission Entry</h2>
+      <p class="sub">Fill in the details below. The receipt updates live on the right.</p>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="studentName">Student Name</label>
+          <input id="studentName" name="studentName" placeholder="e.g. Ali Raza" required>
+        </div>
+        <div class="field-group">
+          <label for="fatherName">Father Name</label>
+          <input id="fatherName" name="fatherName" placeholder="e.g. Muhammad Raza" required>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="className">Class</label>
+          <input id="className" name="className" placeholder="e.g. 5th" required>
+        </div>
+        <div class="field-group">
+          <label for="parentsContact">Parents Contact #</label>
+          <input id="parentsContact" name="parentsContact" placeholder="03XX-XXXXXXX" required>
+        </div>
+      </div>
+
+      <div class="section-label">Fee Breakdown (Rs.)</div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="totalFee">Total Fee</label>
+          <input id="totalFee" name="totalFee" type="number" min="0" placeholder="0" required>
+        </div>
+        <div class="field-group">
+          <label for="amountPaid">Amount Paid</label>
+          <input id="amountPaid" name="amountPaid" type="number" min="0" placeholder="0" required>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="monthlyFee">Monthly Fee</label>
+          <input id="monthlyFee" name="monthlyFee" type="number" min="0" placeholder="0">
+        </div>
+        <div class="field-group">
+          <label for="admissionFee">Admission Fee</label>
+          <input id="admissionFee" name="admissionFee" type="number" min="0" placeholder="0">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label for="security">Security</label>
+          <input id="security" name="security" type="number" min="0" placeholder="0">
+        </div>
+        <div class="field-group">
+          <label for="annualFee">Annual Fee</label>
+          <input id="annualFee" name="annualFee" type="number" min="0" placeholder="0">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="otherDues">Other Dues</label>
+        <input id="otherDues" name="otherDues" type="number" min="0" placeholder="0">
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Generate Receipt &amp; Save Record</button>
+      <div class="status-msg" id="statusMsg"></div>
+    </form>
+
+    <!-- LIVE PREVIEW -->
+    <div>
+      <div class="preview-card">
+        <div class="tag">Live Preview</div>
+        <div class="p-header">
+          <div class="name">The Smart School</div>
+          <div class="campus">Bara Kahu Campus Islamabad</div>
+          <div class="tagline">ADMISSION RECEIPT</div>
+        </div>
+
+        <div class="p-row">
+          <div class="p-field"><span class="lbl">Student</span><span class="val" id="pv-studentName">—</span></div>
+          <div class="p-field"><span class="lbl">Father</span><span class="val" id="pv-fatherName">—</span></div>
+        </div>
+        <div class="p-row">
+          <div class="p-field"><span class="lbl">Class</span><span class="val" id="pv-className">—</span></div>
+          <div class="p-field"><span class="lbl">Contact</span><span class="val" id="pv-parentsContact">—</span></div>
+        </div>
+        <div class="p-row">
+          <div class="p-field"><span class="lbl">Total Fee</span><span class="val" id="pv-totalFee">—</span></div>
+          <div class="p-field"><span class="lbl">Paid</span><span class="val" id="pv-amountPaid">—</span></div>
+        </div>
+        <div class="p-row">
+          <div class="p-field"><span class="lbl">Balance</span><span class="val" id="pv-balance">—</span></div>
+        </div>
+
+        <div class="cut">✂ CUT HERE</div>
+        <p style="text-align:center; font-size:11px; color:#BEB5A3; margin:0;">
+          Full dual-copy PDF (Parent + School) is generated on submit
+        </p>
+      </div>
+
+      <div class="result-panel" id="resultPanel">
+        <h3>Receipt Generated ✓</h3>
+        <iframe id="pdfFrame" title="Generated receipt PDF"></iframe>
+        <div class="result-actions">
+          <button type="button" class="btn-print" id="printBtn">Print</button>
+          <a href="#" class="btn-download" id="downloadLink" download="receipt.pdf">Download PDF</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ⚠️ SET THIS to your real n8n webhook URL before going live
+  const WEBHOOK_URL = "http://localhost:5678/webhook-test/admission-receipt";
+
+  const form = document.getElementById('admissionForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const statusMsg = document.getElementById('statusMsg');
+  const resultPanel = document.getElementById('resultPanel');
+  const pdfFrame = document.getElementById('pdfFrame');
+  const downloadLink = document.getElementById('downloadLink');
+  const printBtn = document.getElementById('printBtn');
+
+  const previewFields = ['studentName','fatherName','className','parentsContact'];
+  previewFields.forEach(id => {
+    document.getElementById(id).addEventListener('input', e => {
+      document.getElementById('pv-' + id).textContent = e.target.value || '—';
+    });
+  });
+
+  function fmt(n) {
+    return 'Rs. ' + Number(n || 0).toLocaleString('en-PK');
+  }
+
+  function updateMoneyPreview() {
+    const totalFee = document.getElementById('totalFee').value;
+    const amountPaid = document.getElementById('amountPaid').value;
+    document.getElementById('pv-totalFee').textContent = totalFee ? fmt(totalFee) : '—';
+    document.getElementById('pv-amountPaid').textContent = amountPaid ? fmt(amountPaid) : '—';
+    const balance = (Number(totalFee) || 0) - (Number(amountPaid) || 0);
+    document.getElementById('pv-balance').textContent = (totalFee || amountPaid) ? fmt(balance) : '—';
+  }
+  document.getElementById('totalFee').addEventListener('input', updateMoneyPreview);
+  document.getElementById('amountPaid').addEventListener('input', updateMoneyPreview);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    statusMsg.textContent = '';
+    statusMsg.className = 'status-msg';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Generating…';
+
+    const data = Object.fromEntries(new FormData(form).entries());
+    ['totalFee','monthlyFee','admissionFee','security','annualFee','otherDues','amountPaid'].forEach(k => {
+      data[k] = Number(data[k] || 0);
+    });
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error('Server returned ' + res.status);
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      pdfFrame.src = url;
+      downloadLink.href = url;
+      downloadLink.download = (data.studentName || 'receipt').replace(/\s+/g, '_') + '.pdf';
+      resultPanel.classList.add('show');
+      resultPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      statusMsg.textContent = 'Saved to record ✓ Receipt ready below.';
+      statusMsg.classList.add('ok');
+      form.reset();
+      previewFields.forEach(id => document.getElementById('pv-' + id).textContent = '—');
+      updateMoneyPreview();
+    } catch (err) {
+      statusMsg.textContent = 'Could not reach the server. Please try again or check the connection.';
+      statusMsg.classList.add('error');
+      console.error(err);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Generate Receipt & Save Record';
+    }
+  });
+
+  printBtn.addEventListener('click', () => {
+    pdfFrame.contentWindow.print();
+  });
+</script>
+
+</body>
+</html>

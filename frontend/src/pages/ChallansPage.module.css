@@ -1,0 +1,206 @@
+.page {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 2rem;
+}
+
+.title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+}
+
+.subtitle {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.formCard {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+.sectionTitle {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+.formGroup {
+    margin-bottom: 1rem;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.formGroup label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+}
+
+.formGroup select,
+.formGroup input {
+    width: 100%;
+    padding: 0.6rem;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 4px;
+    outline: none;
+}
+
+.formGroup select:focus,
+.formGroup input:focus {
+    border-color: var(--accent-gold);
+}
+
+.printPreview {
+    background: white;
+    color: #111;
+    border-radius: 4px;
+    padding: 1.5rem;
+    font-family: Georgia, 'Times New Roman', serif;
+    position: relative;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    height: fit-content;
+    /* Zoom out a little so it fits nicely on screen */
+    transform: scale(0.9);
+    transform-origin: top center;
+}
+
+.printBtnWrap {
+    margin-top: 2rem;
+    text-align: right;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+/* ---- New Fee Blocks ---- */
+.feeBlock {
+    background: var(--brand-red-pale);
+    border: 1px solid rgba(207, 46, 46, 0.15);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.feeBlockTitle {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--brand-red-dark);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.fixedTag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--bg-card);
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+}
+
+.calcResult {
+    padding: 0.6rem;
+    background: #fff;
+    border: 1px dashed var(--border-strong);
+    color: var(--text-primary);
+    border-radius: 4px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+}
+
+.periodRow {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed rgba(207, 46, 46, 0.2);
+}
+
+.waiverNote {
+    font-size: 0.75rem;
+    color: var(--gold);
+    font-weight: 600;
+    margin-top: -0.25rem;
+}
+
+/* ---- Summary ---- */
+.feeSummary {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    background: var(--bg-card);
+    border: 2px solid var(--brand-red);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(207, 46, 46, 0.08);
+}
+
+.summaryRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.discountAmt {
+    color: var(--green);
+    font-weight: 600;
+}
+
+.totalRow {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 1.25rem;
+}
+
+.totalAmt {
+    color: var(--brand-red);
+    font-size: 1.3rem;
+}
+
+.balanceOwed {
+    color: var(--brand-red);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.balancePaid {
+    color: var(--green);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+@media (max-width: 900px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}

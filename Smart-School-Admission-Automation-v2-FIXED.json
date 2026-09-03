@@ -1,0 +1,430 @@
+{
+  "name": "Smart School - Admission Receipt Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "name": "={{ $('Build Receipt Data').item.json.receiptNo }}.pdf",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "id": "872b63d9-e335-4e9a-afc3-c3312945b745",
+      "name": "Save PDF to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1616,
+        704
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "p54uVpsrY8WMX1PH",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Disposition",
+                "value": "=inline; filename=\"{{ $('Build Receipt Data').item.json.receiptNo }}.pdf\""
+              }
+            ]
+          }
+        }
+      },
+      "id": "e1269f32-c692-4143-b5b0-501783c6744b",
+      "name": "Respond with PDF",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1824,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://gotenberg:3000/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "2f50f3a8-8220-4df8-b9df-70f7dd4c96f3",
+      "name": "Generate PDF (Gotenberg)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1392,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "html",
+        "options": {
+          "fileName": "index.html",
+          "mimeType": "text/html"
+        }
+      },
+      "id": "1febce61-c188-4eaa-b649-1c99d7131532",
+      "name": "Convert HTML to File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\n\nfunction row(label, value) {\n  return `<div class=\"field\"><span class=\"label\">${label}</span><span class=\"line\">${value !== undefined && value !== '' ? value : ''}</span></div>`;\n}\n\nfunction copyBlock(copyLabel) {\n  return `\n  <div class=\"receipt\">\n    <div class=\"header\">\n      <div class=\"logo\">@</div>\n      <div class=\"school-title\">\n        <div class=\"school-name\">The Smart School <span class=\"proj\">A project of The City School</span></div>\n        <div class=\"campus\">Bara Kahu Campus Islamabad</div>\n        <div class=\"phone\">051-2322122</div>\n        <div class=\"receipt-tag\">ADMISSION RECEIPT</div>\n      </div>\n      <div class=\"copy-label\">${copyLabel}<br><span class=\"dated\">Dated: <b>${d.date}</b></span><br><span class=\"receiptno\">Receipt#: <b>${d.receiptNo}</b></span></div>\n    </div>\n\n    <div class=\"row two\">\n      ${row('Student Name:', d.studentName)}\n      ${row('Father Name:', d.fatherName)}\n    </div>\n    <div class=\"row two\">\n      ${row('Class:', d.className)}\n      ${row('Rs.', '( ' + d.totalFeeWords + ' )')}\n    </div>\n    <div class=\"row three\">\n      ${row('(I) Monthly Fee', d.monthlyFee)}\n      ${row('(ii) Admission Fee', d.admissionFee)}\n    </div>\n    <div class=\"row two\">\n      ${row('(iii) Security', d.security)}\n      ${row('(iv) Annual Fee', d.annualFee)}\n      ${row('(v) Other Dues', d.otherDues)}\n    </div>\n    <div class=\"row one\">\n      ${row('Parents Contact #:', d.parentsContact)}\n    </div>\n    <div class=\"row two\">\n      ${row('Amount Paid:', d.amountPaid)}\n      ${row('Balance:', d.balance)}\n    </div>\n\n    <div class=\"sign-row\">\n      <div class=\"sign\">Admin &amp; Account Officer Signature</div>\n      <div class=\"sign\">Parents Signature</div>\n    </div>\n  </div>`;\n}\n\nconst html = `<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\">\n<style>\n  @page { size: A4; margin: 10mm; }\n  body { font-family: Georgia, 'Times New Roman', serif; color:#111; margin:0; }\n  .receipt { padding: 14px 18px; }\n  .header { display:flex; align-items:flex-start; justify-content:space-between; border-bottom: 1px solid #333; padding-bottom:6px; margin-bottom:14px;}\n  .logo { font-size: 26px; font-weight:bold; border:2px solid #333; border-radius:6px; width:42px; height:42px; text-align:center; line-height:38px; margin-right:10px;}\n  .school-title { flex:1; text-align:center; }\n  .school-name { font-family: 'Brush Script MT', cursive; font-size: 30px; font-weight:bold; }\n  .proj { font-family: Georgia, serif; font-size: 13px; font-weight:normal; margin-left:8px;}\n  .campus { text-decoration: underline; font-size: 16px; margin-top:2px;}\n  .phone { font-size: 12px; }\n  .receipt-tag { display:inline-block; background:#555; color:#fff; padding:2px 14px; margin-top:4px; letter-spacing:1px; font-size:14px;}\n  .copy-label { font-weight:bold; font-size:15px; text-align:right; min-width:150px;}\n  .dated, .receiptno { font-weight:normal; font-size:12px; }\n  .row { display:flex; gap:14px; margin-bottom:10px; }\n  .row.one .field { flex: 1 1 100%; }\n  .row.two .field { flex: 1 1 48%; }\n  .row.three .field { flex: 1 1 48%; }\n  .field { display:flex; align-items:flex-end; gap:6px; font-size:14px; }\n  .label { white-space:nowrap; }\n  .line { flex:1; border-bottom: 1px solid #333; min-height: 16px; padding-left:4px; }\n  .sign-row { display:flex; justify-content:space-between; margin-top:40px; font-size:13px; }\n  .sign { border-top: 1px solid #333; padding-top:4px; width:40%; text-align:center; }\n  .cut-line { border-top: 1px dashed #333; margin: 6px 0 6px 0; }\n</style>\n</head>\n<body>\n  ${copyBlock('Parent Copy')}\n  <div class=\"cut-line\"></div>\n  ${copyBlock('School Copy')}\n</body>\n</html>`;\n\nreturn [{ json: { ...d, html } }];\n"
+      },
+      "id": "f2d4502e-823a-48c2-8033-03b0f7a50ed0",
+      "name": "Build HTML Receipt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "119kUfdIiPhmeu5egnfScOxtIc6pEfXDYQwWVViWNyyU",
+          "mode": "list",
+          "cachedResultName": "Admission Record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/119kUfdIiPhmeu5egnfScOxtIc6pEfXDYQwWVViWNyyU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/119kUfdIiPhmeu5egnfScOxtIc6pEfXDYQwWVViWNyyU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Receipt No": "={{ $json.receiptNo }}",
+            "Date": "={{ $json.date }}",
+            "Student Name": "={{ $json.studentName }}",
+            "Father Name": "={{ $json.fatherName }}",
+            "Class": "={{ $json.className }}",
+            "Total Fee (Rs.)": "={{ $json.totalFee }}",
+            "Monthly Fee": "={{ $json.monthlyFee }}",
+            "Admission Fee": "={{ $json.admissionFee }}",
+            "Security": "={{ $json.security }}",
+            "Annual Fee": "={{ $json.annualFee }}",
+            "Other Dues": "={{ $json.otherDues }}",
+            "Parents Contact": "={{ $json.parentsContact }}",
+            "Amount Paid": "={{ $json.amountPaid }}",
+            "Balance": "={{ $json.balance }}",
+            "Timestamp": "={{ $json.timestamp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Receipt No",
+              "displayName": "Receipt No",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Student Name",
+              "displayName": "Student Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Father Name",
+              "displayName": "Father Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Class",
+              "displayName": "Class",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Total Fee (Rs.)",
+              "displayName": "Total Fee (Rs.)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Monthly Fee",
+              "displayName": "Monthly Fee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Admission Fee",
+              "displayName": "Admission Fee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Security",
+              "displayName": "Security",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Annual Fee",
+              "displayName": "Annual Fee",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Other Dues",
+              "displayName": "Other Dues",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Parents Contact",
+              "displayName": "Parents Contact",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Amount Paid",
+              "displayName": "Amount Paid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Balance",
+              "displayName": "Balance",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6ecf264f-2602-4bbf-9663-0a45c62ac589",
+      "name": "Save to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        944,
+        416
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "hspyNZdf0Wxh2egp",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ================= Build Receipt Data =================\nconst body = $input.first().json.body || $input.first().json;\n\nfunction numberToWords(num) {\n  num = Math.round(Number(num) || 0);\n  if (num === 0) return 'Zero';\n  const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',\n    'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];\n  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];\n  function two(n) {\n    if (n < 20) return a[n];\n    return b[Math.floor(n / 10)] + (n % 10 ? ' ' + a[n % 10] : '');\n  }\n  function three(n) {\n    if (n > 99) return a[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + two(n % 100) : '');\n    return two(n);\n  }\n  let result = '';\n  const crore = Math.floor(num / 10000000); num %= 10000000;\n  const lakh = Math.floor(num / 100000); num %= 100000;\n  const thousand = Math.floor(num / 1000); num %= 1000;\n  const rest = num;\n  if (crore) result += three(crore) + ' Crore ';\n  if (lakh) result += three(lakh) + ' Lakh ';\n  if (thousand) result += three(thousand) + ' Thousand ';\n  if (rest) result += three(rest);\n  return result.trim() + ' Only';\n}\n\nconst totalFee = Number(body.totalFee || 0);\nconst monthlyFee = Number(body.monthlyFee || 0);\nconst admissionFee = Number(body.admissionFee || 0);\nconst security = Number(body.security || 0);\nconst annualFee = Number(body.annualFee || 0);\nconst otherDues = Number(body.otherDues || 0);\nconst amountPaid = Number(body.amountPaid || 0);\nconst balance = totalFee - amountPaid;\n\nconst now = new Date();\nconst dateStr = now.toLocaleDateString('en-GB').split('/').join('-'); // DD-MM-YYYY\nconst receiptNo = 'SS-' + now.getFullYear().toString().slice(-2) +\n  String(now.getMonth() + 1).padStart(2, '0') +\n  String(now.getDate()).padStart(2, '0') + '-' +\n  String(now.getHours()).padStart(2, '0') +\n  String(now.getMinutes()).padStart(2, '0') +\n  String(now.getSeconds()).padStart(2, '0');\n\nreturn [{\n  json: {\n    receiptNo,\n    date: dateStr,\n    studentName: body.studentName || '',\n    fatherName: body.fatherName || '',\n    className: body.className || '',\n    totalFee,\n    totalFeeWords: numberToWords(totalFee),\n    monthlyFee,\n    admissionFee,\n    security,\n    annualFee,\n    otherDues,\n    parentsContact: body.parentsContact || '',\n    amountPaid,\n    balance,\n    timestamp: now.toISOString()\n  }\n}];"
+      },
+      "id": "967cf33b-ecff-4cee-9519-c296154dfe21",
+      "name": "Build Receipt Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "admission-receipt",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "eb8e0fbe-b17f-454e-8317-3a3488042d52",
+      "name": "Website Form Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        512,
+        576
+      ],
+      "webhookId": "admission-receipt"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Generate PDF (Gotenberg)": {
+      "main": [
+        [
+          {
+            "node": "Respond with PDF",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save PDF to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert HTML to File": {
+      "main": [
+        [
+          {
+            "node": "Generate PDF (Gotenberg)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build HTML Receipt": {
+      "main": [
+        [
+          {
+            "node": "Convert HTML to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Receipt Data": {
+      "main": [
+        [
+          {
+            "node": "Build HTML Receipt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Website Form Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Receipt Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8cda7ac6-71c6-43d3-8fd7-e892290b89f5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2f6ab44f8fc6870aa84c953875336ba2a5c2cb76d673f0a0adac53e7acda6dbe"
+  },
+  "nodeGroups": [],
+  "id": "FUPtyqrJnlm3galj",
+  "tags": []
+}

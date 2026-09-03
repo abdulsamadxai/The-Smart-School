@@ -1,0 +1,28 @@
+.page {
+    padding: 2rem;
+}
+
+.header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+    gap: 1rem;
+}
+
+.title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.subtitle {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    max-width: 520px;
+    line-height: 1.5;
+}
+
+.tableWrap {
+    overflow-x: auto;
+}

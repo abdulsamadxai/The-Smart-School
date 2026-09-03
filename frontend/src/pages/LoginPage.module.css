@@ -1,0 +1,91 @@
+.wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+}
+
+.box {
+    background: #fff;
+    border-radius: var(--radius-xl);
+    padding: 2.5rem;
+    width: 380px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--brand-red-dark), var(--brand-red), var(--brand-red-light));
+}
+
+.logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.logoImg {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+}
+
+.logoTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--brand-red-dark);
+    font-family: 'Playfair Display', serif;
+}
+
+.logoSub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.roleSelector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.roleBtn {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+}
+
+.roleActive {
+    background: #ffffff;
+    color: var(--brand-red-dark);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.submitBtn {
+    width: 100%;
+    margin-top: 0.5rem;
+    justify-content: center;
+}
