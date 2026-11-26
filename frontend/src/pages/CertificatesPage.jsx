@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import api from '../api/client'
 import { toast } from 'react-hot-toast'
+import styles from './CertificatesPage.module.css'
 
 const fmt = (n) => `Rs. ${Number(n || 0).toLocaleString('en-PK')}`
 const todayDisplay = () => new Date().toLocaleDateString('en-PK', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -276,7 +277,7 @@ export default function CertificatesPage() {
     const inp = { padding: '0.68rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', background: 'var(--bg-base)', color: 'var(--text-primary)', outline: 'none', width: '100%' }
 
     return (
-        <div style={{ padding: '2rem 2.5rem', minHeight: '100vh', background: 'var(--bg-base, #f4f1ef)' }}>
+        <div className="page-shell">
 
             {/* Page Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1.75rem' }}>
@@ -297,7 +298,7 @@ export default function CertificatesPage() {
             </div>
 
             {/* Search Panel */}
-            <div style={{ background: 'var(--bg-card)', borderRadius: '14px', padding: '1.5rem', border: '1px solid var(--border)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', marginBottom: '1.5rem' }}>
+            <div className={styles.panel} style={{ background: 'var(--bg-card)', borderRadius: '14px', border: '1px solid var(--border)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', marginBottom: '1.5rem' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>🔍 Find Student</div>
                 <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', minWidth: '160px' }}>
@@ -328,7 +329,7 @@ export default function CertificatesPage() {
                         <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                             {searchResults.length} student{searchResults.length !== 1 ? 's' : ''} found
                         </div>
-                        <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: '10px' }}>
+                        <div className="table-scroll" style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: '10px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                 <thead>
                                     <tr style={{ background: 'var(--bg-base)', borderBottom: '2px solid var(--border)' }}>
@@ -374,7 +375,7 @@ export default function CertificatesPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
                     {/* Student Identity Banner */}
-                    <div style={{ background: 'var(--bg-card)', borderRadius: '14px', padding: '1.25rem 1.5rem', border: '1px solid var(--border)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div className={styles.panelCompact} style={{ background: 'var(--bg-card)', borderRadius: '14px', border: '1px solid var(--border)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, #8B1A1A, #cf2e2e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', color: '#fff', fontWeight: 800, flexShrink: 0 }}>
                                 {selectedStudent.name?.charAt(0)?.toUpperCase()}
@@ -403,7 +404,7 @@ export default function CertificatesPage() {
 
                     {/* Outstanding Dues Section — only shown when unpaid FeeRecords exist */}
                     {!hasClearance && (
-                        <div style={{ background: 'var(--bg-card)', borderRadius: '14px', padding: '1.5rem', border: '1.5px solid #fca5a5', boxShadow: '0 2px 8px rgba(239,68,68,0.06)' }}>
+                        <div className={styles.panel} style={{ background: 'var(--bg-card)', borderRadius: '14px', border: '1.5px solid #fca5a5', boxShadow: '0 2px 8px rgba(239,68,68,0.06)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                                 <div>
                                     <div style={{ fontSize: '0.98rem', fontWeight: 800, color: '#991b1b' }}>🔴 Outstanding Fee Dues</div>
@@ -416,7 +417,7 @@ export default function CertificatesPage() {
                                     🖨️ Generate Fee Dues Challan
                                 </button>
                             </div>
-                            <div style={{ overflowX: 'auto', border: '1px solid #fca5a5', borderRadius: '8px' }}>
+                            <div className="table-scroll" style={{ overflowX: 'auto', border: '1px solid #fca5a5', borderRadius: '8px' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                     <thead>
                                         <tr style={{ background: '#fef2f2', borderBottom: '1.5px solid #fca5a5' }}>
@@ -457,7 +458,7 @@ export default function CertificatesPage() {
                     )}
 
                     {/* Certificate Issuance Form */}
-                    <div style={{ background: 'var(--bg-card)', borderRadius: '14px', padding: '1.5rem', border: `1.5px solid ${hasClearance ? 'rgba(16,185,129,0.3)' : 'var(--border)'}`, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', opacity: hasClearance ? 1 : 0.5, pointerEvents: hasClearance ? 'auto' : 'none', transition: 'opacity 0.3s' }}>
+                    <div className={styles.panel} style={{ background: 'var(--bg-card)', borderRadius: '14px', border: `1.5px solid ${hasClearance ? 'rgba(16,185,129,0.3)' : 'var(--border)'}`, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', opacity: hasClearance ? 1 : 0.5, pointerEvents: hasClearance ? 'auto' : 'none', transition: 'opacity 0.3s' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.2rem', paddingBottom: '0.8rem', borderBottom: '1px solid var(--border)' }}>
                             <span>🎓</span>
                             <h3 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Issue Official Certificates</h3>
