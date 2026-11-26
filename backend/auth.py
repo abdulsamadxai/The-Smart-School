@@ -23,6 +23,39 @@ BANK_ADMIN_USERNAME = os.getenv("BANK_ADMIN_USERNAME", "bank_admin")
 BANK_ADMIN_PASSWORD = os.getenv("BANK_ADMIN_PASSWORD", "bank2025")
 
 
+def _require_strong_passwords_in_production():
+    """Refuse to boot in production with the well-known default passwords.
+
+    Local development (no ENVIRONMENT=production) keeps the defaults so the
+    app still runs out of the box. Set ENVIRONMENT=production on the host
+    and provide real passwords via env vars.
+    """
+    if os.getenv("ENVIRONMENT", "").lower() != "production":
+        return
+    defaults = {
+        "ADMIN_PASSWORD": ("admin", "changeme"),
+        "DIRECTOR_PASSWORD": ("director", "director2025"),
+        "CASH_ADMIN_PASSWORD": ("cash_admin", "cash2025"),
+        "BANK_ADMIN_PASSWORD": ("bank_admin", "bank2025"),
+    }
+    users = {
+        "ADMIN_PASSWORD": ADMIN_USERNAME,
+        "DIRECTOR_PASSWORD": DIRECTOR_USERNAME,
+        "CASH_ADMIN_PASSWORD": CASH_ADMIN_USERNAME,
+        "BANK_ADMIN_PASSWORD": BANK_ADMIN_USERNAME,
+    }
+    for var, (user, password) in defaults.items():
+        if users[var] == user and os.getenv(var, password) == password:
+            raise RuntimeError(
+                f"Refusing to start in production with the default {var}. "
+                f"Set a strong {var} (and {var.replace('_PASSWORD', '_USERNAME')} "
+                f"if needed) in the environment."
+            )
+
+
+_require_strong_passwords_in_production()
+
+
 def _match(a: str, b: str) -> bool:
     return secrets.compare_digest(a.encode("utf-8"), b.encode("utf-8"))
 

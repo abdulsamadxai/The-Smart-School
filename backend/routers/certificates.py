@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select, func, or_
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from database import get_session
 from models import Student, FeeRecord, HistoryLog, StageEnum
@@ -168,6 +168,35 @@ def get_clearance(
         for r in unpaid
     ]
 
+    # Admission balance: the one-off admission/annual/security fees minus
+    # what was already paid. Without this item the clearance page shows
+    # "Clearance Granted" while admission fees are still unpaid, and the
+    # pay-admission button (which only renders for record_id 0) never appears.
+    if student.challan_monthly_fee is not None:
+        mf = student.challan_monthly_fee or 0.0
+        sw = mf * (student.challan_scholarship_pct or 0.0) / 100
+        sib = mf * (student.challan_sibling_discount_pct or 0.0) / 100
+        orp = mf * (student.challan_orphan_discount_pct or 0.0) / 100
+        mf_net = max(0.0, mf - sw - sib - orp)
+
+        af = student.challan_admission_fee or 0.0
+        asw = af * (student.challan_admission_scholarship_pct or 0.0) / 100
+        af_net = max(0.0, af - asw)
+
+        sec = student.challan_security or 0.0
+        sec_sw = sec * (student.challan_security_scholarship_pct or 0.0) / 100
+        sec_net = max(0.0, sec - sec_sw)
+
+        total_fee = mf_net + af_net + (student.challan_annual_fee or 0.0) + sec_net + (student.challan_other_dues or 0.0)
+        paid = student.challan_amount_paid or 0.0
+        admission_arrears = round(max(0.0, total_fee - paid), 2)
+        if admission_arrears > 0:
+            arrears_list.append(ArrearsItem(
+                fee_month="Initial Admission Balance",
+                amount_due=admission_arrears,
+                record_id=0
+            ))
+
     total_arrears = round(sum(a.amount_due for a in arrears_list), 2)
 
     return ClearanceResponse(
@@ -234,14 +263,16 @@ def pay_admission_balance(
     student.challan_amount_paid = (student.challan_amount_paid or 0.0) + admission_arrears
 
     # Create a synthetic FeeRecord so it appears on Daily Sheets
+    now = datetime.now(timezone.utc)
     fee_rec = FeeRecord(
         student_id=student.id,
         fee_month="Initial Admission Balance",
         amount_due=admission_arrears,
         status="paid",
         payment_method=method,
-        cleared_at=datetime.utcnow(),
-        cleared_date=datetime.utcnow().strftime("%Y-%m-%d"),
+        cleared_at=now,
+        cleared_date=now.strftime("%Y-%m-%d"),
+        invoice_id=f"ADM-CLR-{student.id}-{int(now.timestamp())}",
     )
     session.add(fee_rec)
 
@@ -286,7 +317,7 @@ def issue_certificate(
     else:
         student.certificate_issued = body.cert_type
 
-    student.certificate_issued_at = datetime.utcnow()
+    student.certificate_issued_at = datetime.now(timezone.utc)
     if body.leaving_date:
         student.leaving_date = body.leaving_date
     if body.leaving_reason:
@@ -298,7 +329,7 @@ def issue_certificate(
 
     log = HistoryLog(
         student_id=student_id,
-        event_text=f"{body.cert_type.title()} certificate issued on {datetime.utcnow().strftime('%Y-%m-%d')}."
+        event_text=f"{body.cert_type.title()} certificate issued on {datetime.now(timezone.utc).strftime('%Y-%m-%d')}."
     )
     session.add(log)
     session.commit()

@@ -1,9 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship, Column
 from sqlalchemy import JSON, UniqueConstraint
 import json
+
+
+def _utcnow() -> datetime:
+    """Timezone-aware UTC now (replaces naive datetime.now()/utcnow())."""
+    return datetime.now(timezone.utc)
 
 
 class StageEnum(str, Enum):
@@ -52,7 +57,7 @@ class HistoryLog(SQLModel, table=True):
     __tablename__ = "history_logs"
     id: Optional[int] = Field(default=None, primary_key=True)
     student_id: int = Field(foreign_key="students.id", index=True)
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=_utcnow)
     event_text: str
 
     student: Optional["Student"] = Relationship(back_populates="history_logs")
@@ -85,7 +90,7 @@ class Student(StudentBase, table=True):
     __table_args__ = (UniqueConstraint("gr_number", name="uq_student_gr_number"),)
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    registered_at: datetime = Field(default_factory=datetime.now)
+    registered_at: datetime = Field(default_factory=_utcnow)
     stage: StageEnum = Field(default=StageEnum.inquiry, index=True)
     age_at_registration: Optional[float] = None
     criteria_note: Optional[str] = None
@@ -204,13 +209,14 @@ class FeeRecordBase(SQLModel):
     status: str = Field(default="unpaid", index=True)  # "paid" or "unpaid"
     payment_method: Optional[str] = None  # "Cash" or "Bank" (set when paid)
     cleared_date: Optional[str] = Field(default=None, index=True)  # YYYY-MM-DD
+    invoice_id: Optional[str] = None  # e.g. "ADM-CLR-<student_id>-<ts>" for admission balances
 
 class FeeRecord(FeeRecordBase, table=True):
     __tablename__ = "fee_records"
     __table_args__ = (UniqueConstraint("student_id", "fee_month", name="uq_fee_student_month"),)
     id: Optional[int] = Field(default=None, primary_key=True)
     student_id: int = Field(foreign_key="students.id", index=True)
-    created_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=_utcnow)
     cleared_at: Optional[datetime] = None
 
     student: Optional["Student"] = Relationship(back_populates="fee_records")
@@ -246,7 +252,7 @@ class DailySlip(DailySlipBase, table=True):
     __tablename__ = "daily_slips"
     __table_args__ = (UniqueConstraint("slip_date", "payment_method", name="uq_daily_slip_date_method"),)
     id: Optional[int] = Field(default=None, primary_key=True)
-    printed_at: datetime = Field(default_factory=datetime.now)
+    printed_at: datetime = Field(default_factory=_utcnow)
 
 class DailySlipRead(DailySlipBase):
     id: int

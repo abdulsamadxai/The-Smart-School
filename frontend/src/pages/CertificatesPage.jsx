@@ -147,7 +147,7 @@ export default function CertificatesPage() {
             } else {
                 printCert(certType, s)
             }
-        } catch (e) {
+        } catch {
             toast.error('Failed to issue certificate')
         } finally {
             setIssuing(false)
@@ -159,7 +159,7 @@ export default function CertificatesPage() {
             await api.put(`/fees/records/${recordId}/toggle-status`, null, { params: { payment_method: method } })
             toast.success(`Fee marked as Paid via ${method}`)
             await loadClearance(selectedStudent.student_id)
-        } catch (e) {
+        } catch {
             toast.error("Failed to mark fee as paid")
         }
     }
@@ -169,7 +169,7 @@ export default function CertificatesPage() {
             await api.post(`/certificates/student/${selectedStudent.student_id}/pay-admission`, null, { params: { method } })
             toast.success(`Admission Balance paid via ${method}`)
             await loadClearance(selectedStudent.student_id)
-        } catch (e) {
+        } catch {
             toast.error("Failed to mark admission balance as paid")
         }
     }
@@ -411,7 +411,7 @@ export default function CertificatesPage() {
                                         Source: Fee Records — only unpaid monthly fees &amp; arrear entries are listed
                                     </div>
                                 </div>
-                                <button onClick={() => printDuesChallan(selectedStudent)}
+                                <button onClick={() => printClearanceChallan(selectedStudent)}
                                     style={{ padding: '0.5rem 1.1rem', background: '#991b1b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '0.84rem' }}>
                                     🖨️ Generate Fee Dues Challan
                                 </button>
@@ -432,9 +432,9 @@ export default function CertificatesPage() {
                                                 <td style={{ padding: '0.72rem 1rem', textAlign: 'right', color: '#991b1b', fontWeight: 800, fontSize: '0.93rem' }}>{fmt(a.amount_due)}</td>
                                                 <td style={{ padding: '0.72rem 1rem', textAlign: 'right' }}>
                                                     <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
-                                                        <button onClick={() => a.record_id > 0 ? markFeePaid(a.record_id, 'Cash') : markAdmissionBalancePaid('Cash')}
+                                                        <button onClick={() => a.record_id > 0 ? markNormalFeePaid(a.record_id, 'Cash') : markAdmissionBalancePaid('Cash')}
                                                             style={{ padding: '0.3rem 0.7rem', background: '#dcfce7', border: '1px solid #86efac', borderRadius: '5px', cursor: 'pointer', fontSize: '0.78rem', color: '#166534', fontWeight: 700 }}>💵 Cash</button>
-                                                        <button onClick={() => a.record_id > 0 ? markFeePaid(a.record_id, 'Bank') : markAdmissionBalancePaid('Bank')}
+                                                        <button onClick={() => a.record_id > 0 ? markNormalFeePaid(a.record_id, 'Bank') : markAdmissionBalancePaid('Bank')}
                                                             style={{ padding: '0.3rem 0.7rem', background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: '5px', cursor: 'pointer', fontSize: '0.78rem', color: '#1e40af', fontWeight: 700 }}>🏦 Bank</button>
                                                     </div>
                                                 </td>
@@ -515,7 +515,7 @@ export default function CertificatesPage() {
                                 {issuing ? '💾 Saving…' : '💾 Issue & Print Certificate'}
                             </button>
                             {hasClearance && (
-                                <button onClick={() => printClearanceCert(selectedStudent)}
+                                <button onClick={() => printClearanceChallan(selectedStudent)}
                                     style={{ padding: '0.82rem 1.4rem', background: 'transparent', color: '#065f46', border: '1.5px solid #10b981', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem' }}>
                                     🖨️ Print No-Dues Clearance
                                 </button>

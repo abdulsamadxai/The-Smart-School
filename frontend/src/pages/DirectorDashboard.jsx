@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
-import api from '../api/client'
+import api, { recordDailySlipPrint } from '../api/client'
 
 const formatCurrency = (val) =>
     `Rs. ${Number(val || 0).toLocaleString('en-PK')}`
@@ -158,7 +158,7 @@ export default function DirectorDashboard() {
     }, [])
 
     // Printable slip report for Director
-    const printDailySlip = useCallback((method) => {
+    const printDailySlip = useCallback(async (method) => {
         if (!stats?.daily_records) return
         const records = stats.daily_records.filter(
             r => (r.payment_method || '').toLowerCase() === method.toLowerCase()
@@ -268,7 +268,22 @@ export default function DirectorDashboard() {
             </html>
         `)
         win.document.close()
-    }, [stats, selectedDate])
+
+        // Record the print so the slip shows as PRINTED (with who printed it)
+        // instead of staying "PENDING OFFICIAL ADMIN PRINT" forever.
+        try {
+            await recordDailySlipPrint({
+                slip_date: selectedDate,
+                payment_method: method,
+                total_amount: total,
+                record_count: records.length,
+            })
+            loadStats(selectedDate, false)
+        } catch {
+            // The slip already printed; only its recorded status is missing.
+            toast.error('Slip printed, but the print record could not be saved')
+        }
+    }, [stats, selectedDate, loadStats])
 
     // Filtered daily transaction rows
     const filteredDailyRecords = useMemo(() => {

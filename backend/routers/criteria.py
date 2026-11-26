@@ -34,7 +34,7 @@ def create_criterion(
         )
     if payload.min_age_years >= payload.max_age_years:
         raise HTTPException(status_code=422, detail="min_age_years must be less than max_age_years")
-    criterion = CriteriaSetting.from_orm(payload)
+    criterion = CriteriaSetting.model_validate(payload)
     session.add(criterion)
     session.commit()
     session.refresh(criterion)

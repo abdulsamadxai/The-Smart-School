@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import api, { getStudent } from '../api/client'
-import { STAGE_LABELS, stageBadgeClass, formatDate, formatDateTime } from '../utils/helpers'
+import { STAGE_LABELS, stageBadgeClass, formatDateTime } from '../utils/helpers'
 import ScheduleTestModal from '../components/ScheduleTestModal'
 import ScoreEntryModal from '../components/ScoreEntryModal'
 import DecisionModal from '../components/DecisionModal'
@@ -16,17 +16,17 @@ export default function StudentDetail() {
     const [loading, setLoading] = useState(true)
     const [modal, setModal] = useState(null)
 
-    async function fetchStudent() {
+    const fetchStudent = useCallback(async function fetchStudent() {
         try {
             const res = await getStudent(id)
             setStudent(res.data)
-        } catch (err) {
+        } catch {
             toast.error('Student not found')
             navigate('/')
         } finally { setLoading(false) }
-    }
+    }, [id, navigate])
 
-    useEffect(() => { fetchStudent() }, [id])
+    useEffect(() => { fetchStudent() }, [fetchStudent])
 
     function afterAction() { setModal(null); fetchStudent() }
 

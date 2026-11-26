@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import api from '../api/client'
 import { getRole } from '../api/client'
 import { toast } from 'react-hot-toast'
@@ -26,7 +26,6 @@ export default function FeeRecordPage() {
     const [paymentMethodFilter, setPaymentMethodFilter] = useState('all')  // 'all' | 'Cash' | 'Bank'
     const [feeAmountFilter, setFeeAmountFilter] = useState('')
 
-    const printRef = useRef(null)
 
     const monthString = `${selectedMonth} ${selectedYear}`
     const classes = useMemo(() => [...new Set(allStudents.map(s => s.class_applied_for))].sort(), [allStudents])
@@ -74,7 +73,7 @@ export default function FeeRecordPage() {
     // Mark fee as paid with the appropriate payment method
     async function markPaid(recordId, method) {
         try {
-            const { data } = await api.put(`/fees/records/${recordId}/toggle-status?payment_method=${method}`)
+            const { data } = await api.put(`/fees/records/${recordId}/toggle-status`, null, { params: { payment_method: method } })
             setRecords(prev => prev.map(r =>
                 r.id === recordId ? { ...r, status: data.status, cleared_at: data.cleared_at, payment_method: data.payment_method } : r
             ))

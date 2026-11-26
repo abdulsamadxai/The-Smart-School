@@ -1,5 +1,5 @@
 GR_Number,Student_Name,Father_Name,Class,Date_Of_Birth,Father_Contact,Mother_Contact,Stage,Monthly_Fee,Annual_Fee,Admission_Fee,Security_Fee,Scholarship_Pct,Sibling_Discount_Pct,Amount_Paid
-TSS-2026-001,Muhammad Ali,Tariq Mahmood,Class 1,2019-03-15,0300-1234567,0333-7654321,admitted,5000,1200,10000,5000,0,0,16200
+TSS-2026-001,Muhammad Ali,Tariq Mahmood,Grade 1,2019-03-15,0300-1234567,0333-7654321,admitted,5000,1200,10000,5000,0,0,16200
 TSS-2026-002,Ayesha Fatima,Kamran Ahmed,Nursery,2021-08-10,0312-9876543,,admitted,4500,1200,10000,5000,10,0,15700
-TSS-2026-003,Zainab Bibi,Rashid Khan,Class 5,2015-11-22,0345-5551234,0301-4443322,admitted,6000,1500,10000,5000,0,15,17500
+TSS-2026-003,Zainab Bibi,Rashid Khan,Grade 5,2015-11-22,0345-5551234,0301-4443322,admitted,6000,1500,10000,5000,0,15,17500
 ,Hamza Abbasi,Naveed Abbasi,Prep,2020-01-05,0321-7778899,,admitted,4800,1200,10000,5000,0,0,0

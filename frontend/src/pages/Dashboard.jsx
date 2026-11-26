@@ -10,8 +10,6 @@ import DecisionModal from '../components/DecisionModal'
 import JoiningModal from '../components/JoiningModal'
 import styles from './Dashboard.module.css'
 
-const KANBAN_STAGES = ['criteria_passed', 'test_scheduled', 'awaiting_decision', 'admitted']
-
 const STAT_CARDS = [
     { key: 'total', label: 'Total Registered', color: 'var(--text-secondary)', stage: null },
     { key: 'not_eligible', label: 'Not Eligible', color: 'var(--red)', stage: 'not_eligible' },
@@ -42,7 +40,7 @@ export default function Dashboard() {
             const [sRes, stRes] = await Promise.all([getDashboardStats(), getStudents()])
             setStats(sRes.data)
             setStudents(stRes.data)
-        } catch (err) {
+        } catch {
             toast.error('Failed to load data')
         } finally {
             setLoading(false)
