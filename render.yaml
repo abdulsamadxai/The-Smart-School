@@ -38,4 +38,4 @@ services:
       # Must match the real frontend URL (update if Vercel gives the app a
       # different hostname).
       - key: ALLOWED_ORIGINS
-        value: https://the-smart-school.vercel.app
+        value: https://the-smart-school-sigma.vercel.app
