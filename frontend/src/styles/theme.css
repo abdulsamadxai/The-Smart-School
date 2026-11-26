@@ -526,3 +526,96 @@ a {
   display: block;
   margin-bottom: 0.3rem;
 }
+
+/* =========================================================
+   Mobile responsiveness
+   Pages that use inline styles share .page-shell instead of
+   repeating padding; wide tables scroll inside .table-scroll.
+   ========================================================= */
+
+/* Shared page shell for pages styled with inline styles
+   (DirectorDashboard, CertificatesPage). */
+.page-shell {
+  padding: 2rem 2.5rem;
+  min-height: 100vh;
+  background: var(--bg-base);
+}
+
+/* Horizontally scrollable table wrapper. The min-width keeps
+   multi-column tables readable instead of crushing them. */
+.table-scroll {
+  overflow-x: auto;
+}
+
+.table-scroll > table {
+  min-width: 680px;
+}
+
+@media (max-width: 768px) {
+  /* Never let the page itself scroll sideways. */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .page-shell {
+    padding: 1.25rem 1rem;
+  }
+
+  /* Modal: tighter padding, bigger close target, footer wraps. */
+  .modal-box {
+    max-height: 92vh;
+  }
+
+  .modal-header,
+  .modal-footer {
+    padding: 0.75rem 1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .close-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Two-column form rows stack full-width. */
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Touch-friendly targets; 16px inputs stop iOS zoom-on-focus. */
+  .btn,
+  .btn-sm {
+    min-height: 44px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-shell {
+    padding: 1rem 0.75rem;
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+  }
+
+  .modal-footer .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .modal-box {
+    width: calc(100% - 1rem);
+  }
+}
