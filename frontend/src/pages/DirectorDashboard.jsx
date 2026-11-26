@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-hot-toast'
 import api, { recordDailySlipPrint } from '../api/client'
+import styles from './DirectorDashboard.module.css'
 
 const formatCurrency = (val) =>
     `Rs. ${Number(val || 0).toLocaleString('en-PK')}`
@@ -328,7 +329,7 @@ export default function DirectorDashboard() {
     const bankPercent = dailyTotalCombined > 0 ? (100 - cashPercent) : 0
 
     return (
-        <div style={{ padding: '2rem 2.5rem', minHeight: '100vh', background: 'var(--bg-base, #f4f1ef)' }}>
+        <div className="page-shell">
             {/* TOP BAR / EXECUTIVE HEADER */}
             <div style={{
                 background: 'var(--bg-card)',
@@ -350,8 +351,8 @@ export default function DirectorDashboard() {
                             color: '#fff'
                         }}>👔</div>
                         <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                <h1 style={{ fontSize: '1.55rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.3px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                                <h1 className={styles.pageTitle}>
                                     Director's Executive Suite
                                 </h1>
                                 <span style={{
@@ -434,7 +435,8 @@ export default function DirectorDashboard() {
                 {/* Section Filter Pills */}
                 <div style={{
                     display: 'flex', gap: '0.5rem', marginTop: '1.25rem',
-                    borderTop: '1px solid var(--border)', paddingTop: '1rem'
+                    borderTop: '1px solid var(--border)', paddingTop: '1rem',
+                    flexWrap: 'wrap'
                 }}>
                     <button
                         onClick={() => setActiveSection('all')}
@@ -504,7 +506,7 @@ export default function DirectorDashboard() {
                             marginBottom: '2rem'
                         }}>
                             {/* Section Header */}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.4rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.4rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                                 <div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <span style={{ fontSize: '1.25rem' }}>🏛️</span>
@@ -526,7 +528,7 @@ export default function DirectorDashboard() {
                             </div>
 
                             {/* 6 Balanced KPI Cards: 3x2 Grid */}
-                            <div style={{
+                            <div className={styles.kpiGrid} style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
                                 gap: '1.2rem'
@@ -767,7 +769,7 @@ const StatsCards = React.memo(({ stats, printDailySlip, dailyTotalCombined, cash
     return (
         <>
             {/* 3 Prominent Daily Cards: Cash, Bank, Combined */}
-            <div style={{
+            <div className={styles.dailyGrid} style={{
                                 display: 'grid',
                                 gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
                                 gap: '1.25rem',
@@ -825,7 +827,7 @@ const StatsCards = React.memo(({ stats, printDailySlip, dailyTotalCombined, cash
                                         </button>
                                     </div>
 
-                                    <div style={{ fontSize: '2.1rem', fontWeight: 900, color: '#15803d', letterSpacing: '-0.5px' }}>
+                                    <div className={styles.bigValue} style={{ fontWeight: 900, color: '#15803d' }}>
                                         {formatCurrency(stats.daily_cash?.total)}
                                     </div>
 
@@ -914,7 +916,7 @@ const StatsCards = React.memo(({ stats, printDailySlip, dailyTotalCombined, cash
                                         </button>
                                     </div>
 
-                                    <div style={{ fontSize: '2.1rem', fontWeight: 900, color: '#1d4ed8', letterSpacing: '-0.5px' }}>
+                                    <div className={styles.bigValue} style={{ fontWeight: 900, color: '#1d4ed8' }}>
                                         {formatCurrency(stats.daily_bank?.total)}
                                     </div>
 
@@ -979,7 +981,7 @@ const StatsCards = React.memo(({ stats, printDailySlip, dailyTotalCombined, cash
                                         </div>
                                     </div>
 
-                                    <div style={{ fontSize: '2.1rem', fontWeight: 900, color: 'var(--brand-red-dark, #8B1A1A)', letterSpacing: '-0.5px' }}>
+                                    <div className={styles.bigValue} style={{ fontWeight: 900, color: 'var(--brand-red-dark, #8B1A1A)' }}>
                                         {formatCurrency(dailyTotalCombined)}
                                     </div>
 
@@ -1104,7 +1106,7 @@ const DailySlipsTable = React.memo(({
                                     </div>
                                 ) : (
                                     <div style={{ overflowX: 'auto' }}>
-                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                                        <table className={styles.dailyTable} style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
                                             <thead>
                                                 <tr style={{ background: 'var(--bg-base)', borderBottom: '1px solid var(--border)' }}>
                                                     <th style={{ padding: '0.65rem 0.85rem', textAlign: 'left', fontWeight: 700, color: 'var(--text-secondary)' }}>#</th>

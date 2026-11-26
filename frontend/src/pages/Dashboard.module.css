@@ -220,3 +220,63 @@
 .tableWrap {
     overflow-x: auto;
 }
+
+.tableWrap table {
+    min-width: 680px;
+}
+
+@media (max-width: 768px) {
+    .page {
+        padding: 1rem 0.75rem 2rem;
+    }
+
+    .title {
+        font-size: 1.2rem;
+    }
+
+    .header {
+        margin-bottom: 1.25rem;
+    }
+
+    .searchInput {
+        flex: 1 1 100%;
+        max-width: none;
+    }
+
+    .viewToggle {
+        margin-left: 0;
+    }
+
+    .statsGrid {
+        gap: 0.625rem;
+    }
+
+    .statCard {
+        padding: 0.875rem;
+    }
+
+    .statValue {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .headerActions {
+        width: 100%;
+    }
+
+    .headerActions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .statsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Kanban columns stay swipeable; keep them readable. */
+    .kanbanCol {
+        min-width: 260px;
+        width: 260px;
+    }
+}

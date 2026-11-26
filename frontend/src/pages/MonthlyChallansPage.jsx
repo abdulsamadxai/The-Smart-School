@@ -281,7 +281,7 @@ export default function MonthlyChallansPage() {
                             Students in {selectedClass}
                             {searchQuery && <span style={{ fontSize: '0.85rem', fontWeight: 400, color: 'var(--text-muted)', marginLeft: '0.5rem' }}>— {filteredData.length} result(s)</span>}
                         </h2>
-                        <div style={{ overflowX: 'auto' }}>
+                        <div className="table-scroll" style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '2px solid var(--border)', background: 'var(--bg-primary)' }}>

@@ -1,0 +1,18 @@
+/* Mobile responsiveness for CertificatesPage.
+   Panels are inline-styled; padding lives here so it can shrink
+   on phones. Desktop values match the inline styles they replace. */
+
+.panel {
+    padding: 1.5rem;
+}
+
+.panelCompact {
+    padding: 1.25rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .panel,
+    .panelCompact {
+        padding: 1rem;
+    }
+}
