@@ -1,8 +1,9 @@
 from typing import Optional, List
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, select, SQLModel
+from sqlalchemy.exc import IntegrityError
 import json
 import io
 import csv as csv_module
@@ -26,9 +27,37 @@ router = APIRouter(prefix="/students", tags=["students"])
 
 def _compute_age(dob_str: str, ref_date: date) -> float:
     """Return age in decimal years at ref_date."""
-    dob = date.fromisoformat(dob_str)
+    try:
+        dob = date.fromisoformat(dob_str)
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail="date_of_birth must be a valid date in YYYY-MM-DD format",
+        )
     delta_days = (ref_date - dob).days
     return round(delta_days / 365.25, 2)
+
+
+def _validate_date(value: str, field: str) -> None:
+    """Raise 422 unless value is a valid YYYY-MM-DD date."""
+    try:
+        date.fromisoformat(value)
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail=f"{field} must be a valid date in YYYY-MM-DD format",
+        )
+
+
+def _validate_time(value: str, field: str) -> None:
+    """Raise 422 unless value is a valid HH:MM (24-hour) time."""
+    try:
+        datetime.strptime(value, "%H:%M")
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail=f"{field} must be a valid time in HH:MM format",
+        )
 
 
 def _auto_criteria_check(student: Student, session: Session) -> None:
@@ -71,14 +100,14 @@ def _log(session: Session, student_id: int, text: str):
 
 
 def _to_read(s: Student) -> StudentRead:
-    data = s.dict()
+    data = s.model_dump()
     data["score_subjects"] = s.score_subjects
     data.pop("score_subjects_json", None)
     return StudentRead(**data)
 
 
 def _to_detail(s: Student) -> StudentDetail:
-    data = s.dict()
+    data = s.model_dump()
     data["score_subjects"] = s.score_subjects
     data.pop("score_subjects_json", None)
     # history newest first
@@ -125,6 +154,10 @@ def register_student(
     session: Session = Depends(get_session),
     _user: str = Depends(verify_credentials),
 ):
+    # Validate date of birth before touching the database so a bad
+    # date returns 422 instead of a 500 from the age calculation.
+    _validate_date(payload.date_of_birth, "date_of_birth")
+
     # Duplicate detection
     duplicates = session.exec(
         select(Student).where(
@@ -142,7 +175,7 @@ def register_student(
             },
         )
 
-    student = Student.from_orm(payload)
+    student = Student.model_validate(payload)
     session.add(student)
     session.flush()  # get ID before logging
 
@@ -192,6 +225,8 @@ def schedule_test(
             status_code=400,
             detail=f"Cannot schedule test for student in stage '{student.stage.value}'"
         )
+    _validate_date(payload.test_date, "test_date")
+    _validate_time(payload.test_time, "test_time")
     student.test_date = payload.test_date
     student.test_time = payload.test_time
     student.stage = StageEnum.test_scheduled
@@ -228,7 +263,7 @@ def enter_score(
     student.score_total_obtained = payload.score_total_obtained
     student.score_total_possible = payload.score_total_possible
     if payload.score_subjects:
-        student.score_subjects_json = json.dumps([s.dict() for s in payload.score_subjects])
+        student.score_subjects_json = json.dumps([s.model_dump() for s in payload.score_subjects])
         subject_summary = ", ".join(
             f"{s.subject}: {s.obtained}/{s.total}" for s in payload.score_subjects
         )
@@ -263,19 +298,36 @@ def decide(
             detail=f"Cannot make decision for student in stage '{student.stage.value}'"
         )
 
-    student.decision = payload.decision
-    student.decision_at = datetime.utcnow()
+    # Two simultaneous admissions can generate the same GR number (read
+    # max, then insert). The unique constraint then fails the commit, so
+    # roll back and retry with a fresh number instead of returning a 500.
+    for attempt in range(3):
+        student.decision = payload.decision
+        student.decision_at = datetime.now(timezone.utc)
 
-    if payload.decision == DecisionEnum.admitted:
-        student.stage = StageEnum.admitted
-        student.gr_number = generate_gr_number(session)
-        student.class_enrolled = student.class_applied_for
-        _log(session, student.id, f"Admitted. GR number assigned: {student.gr_number}. Enrolled in {student.class_enrolled}.")
-    else:
-        student.stage = StageEnum.not_admitted
-        _log(session, student.id, "Decision: Not Admitted.")
+        if payload.decision == DecisionEnum.admitted:
+            student.stage = StageEnum.admitted
+            student.gr_number = generate_gr_number(session)
+            student.class_enrolled = student.class_applied_for
+            _log(session, student.id, f"Admitted. GR number assigned: {student.gr_number}. Enrolled in {student.class_enrolled}.")
+        else:
+            student.stage = StageEnum.not_admitted
+            _log(session, student.id, "Decision: Not Admitted.")
 
-    session.commit()
+        try:
+            session.commit()
+            break
+        except IntegrityError:
+            session.rollback()
+            student = session.get(Student, student_id)
+            if student is None:
+                raise HTTPException(status_code=404, detail="Student not found")
+            if attempt == 2:
+                raise HTTPException(
+                    status_code=409,
+                    detail="Could not assign a unique GR number, please try again",
+                )
+
     session.refresh(student)
     return _to_read(student)
 
@@ -398,7 +450,7 @@ def export_csv(
         ])
 
     output.seek(0)
-    filename = f"students_export_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.csv"
+    filename = f"students_export_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.csv"
     return StreamingResponse(
         iter([output.getvalue()]),
         media_type="text/csv",
@@ -454,15 +506,17 @@ def promote_all_students(
     graduated_count = 0
 
     for student in students:
-        current_class = student.class_applied_for
-        
+        if student.joined is False:
+            continue
+        current_class = student.class_enrolled or student.class_applied_for
+
         if current_class == "Graduated":
             continue
-            
+
         try:
             current_index = CLASS_ORDER.index(current_class)
             next_index = current_index + 1
-            
+
             if next_index < len(CLASS_ORDER):
                 next_class = CLASS_ORDER[next_index]
                 student.class_applied_for = next_class
