@@ -169,7 +169,7 @@ export default function StudentRecordsPage() {
                 </div>
             ) : (
                 <div className={styles.formCard} style={{ padding: 0, overflow: 'hidden' }}>
-                    <div style={{ overflowX: 'auto' }}>
+                    <div className="table-scroll" style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                             <thead>
                                 <tr style={{ borderBottom: '2px solid var(--border)', background: 'var(--bg-primary)' }}>
@@ -238,15 +238,15 @@ export default function StudentRecordsPage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     zIndex: 9999, padding: '1rem'
                 }} onClick={closeModal}>
-                    <div style={{
+                    <div className={styles.detailModal} style={{
                         background: 'var(--bg-card)', borderRadius: '16px',
-                        padding: '2rem', width: '100%', maxWidth: '760px',
+                        width: '100%', maxWidth: '760px',
                         maxHeight: '92vh', overflowY: 'auto',
                         border: '1px solid var(--border)', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
                     }} onClick={e => e.stopPropagation()}>
 
                         {/* Header */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                             <div>
                                 <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>{s.name}</h2>
                                 <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
@@ -333,7 +333,7 @@ export default function StudentRecordsPage() {
                                 {/* ── Section 5: Admission Challan (Fee) ── */}
                                 <Section title="💳 Admission Fee Challan">
                                     {(s.challan_monthly_fee !== null && s.challan_monthly_fee !== undefined) ? (
-                                        <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem', background: 'var(--bg-primary)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.85rem' }}>
+                                        <div className={styles.challanGrid}>
                                             <Row label="Monthly Fee Original" value={`Rs. ${s.challan_monthly_fee}`} />
                                             <Row label="Scholarship %" value={s.challan_scholarship_pct ? `${s.challan_scholarship_pct}%` : '—'} />
                                             <Row label="Sibling Discount" value={s.challan_sibling_discount_pct ? `${s.challan_sibling_discount_pct}%` : '—'} />
@@ -351,7 +351,7 @@ export default function StudentRecordsPage() {
                                             Admission fee details have not been saved yet. Generate a challan from the Admission Fee Challan tab to save them.
                                         </p>
                                     )}
-                                    <div style={{ gridColumn: '1 / -1', marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem' }}>
+                                    <div className={styles.modalGrid} style={{ gridColumn: '1 / -1', marginTop: '1rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
                                         <Row label="Decision" value={s.decision ? s.decision.toUpperCase() : '—'} />
                                         <Row label="Decision Date" value={s.decision_at ? new Date(s.decision_at).toLocaleDateString('en-PK') : '—'} />
                                         <Row label="Joining Status" value={
@@ -363,7 +363,7 @@ export default function StudentRecordsPage() {
                                 </Section>
 
                                 {/* ── Section 5: Fee Summary ── */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                                <div className={styles.feeSummaryGrid}>
                                     <StatCard label="Total Months on Record" value={feeHistory.length} color="var(--text-primary)" />
                                     <StatCard label="Total Paid" value={`Rs. ${paidTotal.toLocaleString()}`} color="#10b981" />
                                     <StatCard label="Total Due (Arrears)" value={`Rs. ${unpaidTotal.toLocaleString()}`} color="var(--brand-red)" />
@@ -376,7 +376,7 @@ export default function StudentRecordsPage() {
                                             No fee records yet. They appear here after monthly challans are printed.
                                         </p>
                                     ) : (
-                                        <div style={{ gridColumn: '1 / -1', overflowX: 'auto' }}>
+                                        <div className="table-scroll" style={{ gridColumn: '1 / -1', overflowX: 'auto' }}>
                                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
                                                 <thead>
                                                     <tr style={{ background: 'var(--bg-primary)', borderBottom: '2px solid var(--border)' }}>
@@ -413,7 +413,7 @@ export default function StudentRecordsPage() {
                                     <Section title="🕓 Activity Log">
                                         <div style={{ gridColumn: '1 / -1' }}>
                                             {fullDetail.history_logs.slice().reverse().map(log => (
-                                                <div key={log.id} style={{ display: 'flex', gap: '1rem', padding: '0.5rem 0', borderBottom: '1px solid var(--border)', fontSize: '0.85rem' }}>
+                                                <div key={log.id} style={{ display: 'flex', gap: '0.5rem 1rem', flexWrap: 'wrap', padding: '0.5rem 0', borderBottom: '1px solid var(--border)', fontSize: '0.85rem' }}>
                                                     <span style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
                                                         {new Date(log.timestamp).toLocaleString('en-PK')}
                                                     </span>
@@ -442,7 +442,7 @@ function Section({ title, children }) {
             }}>
                 {title}
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.4rem 1.5rem', fontSize: '0.88rem' }}>
+            <div className={styles.modalGrid}>
                 {children}
             </div>
         </div>
