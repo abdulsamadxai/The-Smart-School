@@ -3,7 +3,6 @@ import api from '../api/client'
 import { toast } from 'react-hot-toast'
 import styles from './ChallansPage.module.css'
 
-const fmt = (n) => n !== null && n !== undefined && n !== '' ? `Rs. ${Number(n).toLocaleString('en-PK')}` : '—'
 const dash = (v) => v || '—'
 
 export default function StudentRecordsPage() {
