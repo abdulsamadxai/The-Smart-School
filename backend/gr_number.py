@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import Session, select
 from models import Student
 
@@ -9,7 +9,7 @@ def generate_gr_number(session: Session) -> str:
     Queries the max existing number for the current year so it's always unique,
     even if the DB is manually edited or records are deleted.
     """
-    year = datetime.utcnow().year
+    year = datetime.now(timezone.utc).year
     prefix = f"TSS-{year}-"
 
     statement = select(Student.gr_number).where(
