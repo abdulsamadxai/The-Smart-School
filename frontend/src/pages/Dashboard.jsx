@@ -57,14 +57,14 @@ export default function Dashboard() {
         return () => clearInterval(interval)
     }, [fetchAll])
 
-    function getStatValue(card) {
+    const getStatValue = useCallback((card) => {
         if (!stats) return '—'
         if (card.key === 'total') return stats.total
         if (card.key === 'admitted_not_joined') return stats.admitted_not_joined
         return stats.by_stage?.[card.key] ?? 0
-    }
+    }, [stats])
 
-    function handleStatClick(card) {
+    const handleStatClick = useCallback((card) => {
         if (card.stage) {
             setStageFilter(card.key === 'admitted_not_joined' ? 'admitted' : card.stage)
             setView('table')
@@ -72,7 +72,7 @@ export default function Dashboard() {
             setStageFilter(null)
             setView('table')
         }
-    }
+    }, [])
 
     const filtered = students.filter(s => {
         const q = search.toLowerCase()
@@ -84,7 +84,7 @@ export default function Dashboard() {
         return matchSearch && matchStage
     })
 
-    function sorted(list) {
+    const sorted = useCallback((list) => {
         return [...list].sort((a, b) => {
             let av = a[sortCol], bv = b[sortCol]
             if (sortCol === 'registered_at') {
@@ -94,22 +94,22 @@ export default function Dashboard() {
             if (av > bv) return sortDir === 'asc' ? 1 : -1
             return 0
         })
-    }
+    }, [sortCol, sortDir])
 
-    function handleSort(col) {
+    const handleSort = useCallback((col) => {
         if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
         else { setSortCol(col); setSortDir('asc') }
-    }
+    }, [sortCol])
 
-    function openAction(type, student) { setActionModal({ type, student }) }
-    function closeAction() { setActionModal(null) }
+    const openAction = useCallback((type, student) => setActionModal({ type, student }), [])
+    const closeAction = useCallback(() => setActionModal(null), [])
 
-    function afterAction() {
+    const afterAction = useCallback(() => {
         closeAction()
         fetchAll()
-    }
+    }, [closeAction, fetchAll])
 
-    async function handleDelete(student) {
+    const handleDelete = useCallback(async (student) => {
         if (!window.confirm(`Are you sure you want to completely delete the record for ${student.name}?`)) return
         try {
             const tid = toast.loading('Deleting...')
@@ -119,9 +119,9 @@ export default function Dashboard() {
         } catch (e) {
             toast.error(e?.response?.data?.detail || 'Failed to delete record')
         }
-    }
+    }, [fetchAll])
 
-    async function handleExport() {
+    const handleExport = useCallback(async () => {
         setExporting(true)
         try {
             const res = await exportCSV()
@@ -134,7 +134,7 @@ export default function Dashboard() {
             toast.success('CSV exported')
         } catch { toast.error('Export failed') }
         finally { setExporting(false) }
-    }
+    }, [])
 
     if (loading) return (
         <div className={styles.loadingScreen}>

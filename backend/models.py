@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, List
 from sqlmodel import SQLModel, Field, Relationship, Column
-from sqlalchemy import JSON
+from sqlalchemy import JSON, UniqueConstraint
 import json
 
 
@@ -52,7 +52,7 @@ class HistoryLog(SQLModel, table=True):
     __tablename__ = "history_logs"
     id: Optional[int] = Field(default=None, primary_key=True)
     student_id: int = Field(foreign_key="students.id", index=True)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=datetime.now)
     event_text: str
 
     student: Optional["Student"] = Relationship(back_populates="history_logs")
@@ -69,23 +69,24 @@ class HistoryLogRead(SQLModel):
 # ---------------------------------------------------------------------------
 
 class StudentBase(SQLModel):
-    name: str
-    class_applied_for: str
-    class_enrolled: Optional[str] = None
-    date_of_birth: str   # ISO 8601 date string YYYY-MM-DD
-    father_contact_number: Optional[str] = ""
-    mother_contact_number: Optional[str] = ""
-    parent_relation: Optional[str] = None
-    parent_name: Optional[str] = None
+    name: str = Field(max_length=100)
+    class_applied_for: str = Field(index=True, max_length=50)
+    class_enrolled: Optional[str] = Field(default=None, index=True, max_length=50)
+    date_of_birth: str = Field(max_length=20)   # ISO 8601 date string YYYY-MM-DD
+    father_contact_number: Optional[str] = Field(default="", max_length=25)
+    mother_contact_number: Optional[str] = Field(default="", max_length=25)
+    parent_relation: Optional[str] = Field(default=None, max_length=50)
+    parent_name: Optional[str] = Field(default=None, max_length=100)
 
 
 
 class Student(StudentBase, table=True):
     __tablename__ = "students"
+    __table_args__ = (UniqueConstraint("gr_number", name="uq_student_gr_number"),)
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    registered_at: datetime = Field(default_factory=datetime.utcnow)
-    stage: StageEnum = Field(default=StageEnum.inquiry)
+    registered_at: datetime = Field(default_factory=datetime.now)
+    stage: StageEnum = Field(default=StageEnum.inquiry, index=True)
     age_at_registration: Optional[float] = None
     criteria_note: Optional[str] = None
 
@@ -101,7 +102,7 @@ class Student(StudentBase, table=True):
     # Decision
     decision: Optional[DecisionEnum] = None
     decision_at: Optional[datetime] = None
-    gr_number: Optional[str] = None
+    gr_number: Optional[str] = Field(default=None, max_length=20)
 
     # Joining
     joined: Optional[bool] = None
@@ -198,16 +199,18 @@ class StudentDetail(StudentRead):
 # ---------------------------------------------------------------------------
 
 class FeeRecordBase(SQLModel):
-    fee_month: str
+    fee_month: str = Field(index=True)
     amount_due: float
-    status: str = "unpaid"  # "paid" or "unpaid"
+    status: str = Field(default="unpaid", index=True)  # "paid" or "unpaid"
     payment_method: Optional[str] = None  # "Cash" or "Bank" (set when paid)
+    cleared_date: Optional[str] = Field(default=None, index=True)  # YYYY-MM-DD
 
 class FeeRecord(FeeRecordBase, table=True):
     __tablename__ = "fee_records"
+    __table_args__ = (UniqueConstraint("student_id", "fee_month", name="uq_fee_student_month"),)
     id: Optional[int] = Field(default=None, primary_key=True)
     student_id: int = Field(foreign_key="students.id", index=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)
     cleared_at: Optional[datetime] = None
 
     student: Optional["Student"] = Relationship(back_populates="fee_records")
@@ -218,6 +221,7 @@ class FeeRecordRead(FeeRecordBase):
     created_at: datetime
     cleared_at: Optional[datetime]
     payment_method: Optional[str] = None
+    cleared_date: Optional[str] = None
 
 class FeeRecordCreate(FeeRecordBase):
     student_id: int
@@ -225,6 +229,32 @@ class FeeRecordCreate(FeeRecordBase):
 class FeeRecordUpdate(SQLModel):
     status: str
     payment_method: Optional[str] = None
+    cleared_date: Optional[str] = None
+
+# ---------------------------------------------------------------------------
+# Daily Slips (Print record tracking for Director & Admin synchronization)
+# ---------------------------------------------------------------------------
+
+class DailySlipBase(SQLModel):
+    slip_date: str = Field(index=True)  # YYYY-MM-DD
+    payment_method: str = Field(index=True)  # "Cash" or "Bank"
+    total_amount: float = 0.0
+    record_count: int = 0
+    printed_by: Optional[str] = None
+
+class DailySlip(DailySlipBase, table=True):
+    __tablename__ = "daily_slips"
+    __table_args__ = (UniqueConstraint("slip_date", "payment_method", name="uq_daily_slip_date_method"),)
+    id: Optional[int] = Field(default=None, primary_key=True)
+    printed_at: datetime = Field(default_factory=datetime.now)
+
+class DailySlipRead(DailySlipBase):
+    id: int
+    printed_at: datetime
+
+class DailySlipCreate(DailySlipBase):
+    pass
+
 
 # ---------------------------------------------------------------------------
 # Request bodies for stage transitions

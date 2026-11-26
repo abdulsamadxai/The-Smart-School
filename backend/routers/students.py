@@ -466,6 +466,7 @@ def promote_all_students(
             if next_index < len(CLASS_ORDER):
                 next_class = CLASS_ORDER[next_index]
                 student.class_applied_for = next_class
+                student.class_enrolled = next_class  # Keep class_enrolled in sync
                 
                 if next_class == "Graduated":
                     graduated_count += 1

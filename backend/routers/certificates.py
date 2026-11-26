@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select
+from sqlmodel import Session, select, func, or_
 from typing import List, Optional
 from datetime import datetime
 
 from database import get_session
 from models import Student, FeeRecord, HistoryLog, StageEnum
 from sqlmodel import SQLModel
+from auth import verify_credentials
 
 router = APIRouter(prefix="/certificates", tags=["Certificates"])
 
@@ -47,26 +48,47 @@ class ClearanceResponse(SQLModel):
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @router.get("/stats")
-def get_certificate_stats(session: Session = Depends(get_session)):
+def get_certificate_stats(
+    session: Session = Depends(get_session),
+    _user: str = Depends(verify_credentials),
+):
     """Returns dashboard stats for the certificates page."""
-    # All admitted / joined students
-    all_students = session.exec(select(Student)).all()
-    eligible = [
-        s for s in all_students
-        if s.stage == StageEnum.admitted or s.joined is True
-    ]
+    # All eligible students: stage == admitted OR joined == True
+    eligible_cond = or_(Student.stage == StageEnum.admitted, Student.joined == True)
+    
+    total_eligible = session.exec(select(func.count(Student.id)).where(eligible_cond)).one()
 
-    total_eligible = len(eligible)
-    cert_issued = [s for s in eligible if s.certificate_issued]
-    leaving_issued = [s for s in cert_issued if s.certificate_issued in ("leaving", "both")]
-    character_issued = [s for s in cert_issued if s.certificate_issued in ("character", "both")]
-    pending_certs = total_eligible - len(cert_issued)
+    # Certificates issued
+    cert_issued = session.exec(
+        select(func.count(Student.id)).where(
+            eligible_cond,
+            Student.certificate_issued != None
+        )
+    ).one()
+
+    # Leaving issued
+    leaving_issued = session.exec(
+        select(func.count(Student.id)).where(
+            eligible_cond,
+            Student.certificate_issued.in_(["leaving", "both"])
+        )
+    ).one()
+
+    # Character issued
+    character_issued = session.exec(
+        select(func.count(Student.id)).where(
+            eligible_cond,
+            Student.certificate_issued.in_(["character", "both"])
+        )
+    ).one()
+
+    pending_certs = total_eligible - cert_issued
 
     return {
         "total_eligible": total_eligible,
-        "certificates_issued": len(cert_issued),
-        "leaving_issued": len(leaving_issued),
-        "character_issued": len(character_issued),
+        "certificates_issued": cert_issued,
+        "leaving_issued": leaving_issued,
+        "character_issued": character_issued,
         "pending": pending_certs,
     }
 
@@ -75,7 +97,8 @@ def get_certificate_stats(session: Session = Depends(get_session)):
 def search_students(
     q: Optional[str] = None,
     class_name: Optional[str] = None,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    _user: str = Depends(verify_credentials),
 ):
     """
     Search ALL students (admitted or joined) by name, GR number or class.
@@ -119,7 +142,8 @@ def search_students(
 @router.get("/student/{student_id}/clearance", response_model=ClearanceResponse)
 def get_clearance(
     student_id: int,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    _user: str = Depends(verify_credentials),
 ):
     """
     Returns the student's details plus any unpaid fee arrears.
@@ -132,7 +156,7 @@ def get_clearance(
         select(FeeRecord).where(
             FeeRecord.student_id == student_id,
             FeeRecord.status == "unpaid"
-        )
+        ).order_by(FeeRecord.id)
     ).all()
 
     arrears_list = [
@@ -144,33 +168,7 @@ def get_clearance(
         for r in unpaid
     ]
 
-    # Calculate Admission Fee balance if challan data exists
-    admission_arrears = 0.0
-    if student.challan_monthly_fee is not None:
-        mf = student.challan_monthly_fee or 0.0
-        sw = mf * (student.challan_scholarship_pct or 0.0) / 100
-        sib = mf * (student.challan_sibling_discount_pct or 0.0) / 100
-        orp = mf * (student.challan_orphan_discount_pct or 0.0) / 100
-        mf_net = max(0.0, mf - sw - sib - orp)
-
-        af = student.challan_admission_fee or 0.0
-        asw = af * (student.challan_admission_scholarship_pct or 0.0) / 100
-        af_net = max(0.0, af - asw)
-
-        sec = student.challan_security or 0.0
-        sec_sw = sec * (student.challan_security_scholarship_pct or 0.0) / 100
-        sec_net = max(0.0, sec - sec_sw)
-
-        total_fee = mf_net + af_net + (student.challan_annual_fee or 0.0) + sec_net + (student.challan_other_dues or 0.0)
-        paid = student.challan_amount_paid or 0.0
-        admission_arrears = round(max(0.0, total_fee - paid), 2)
-
-    if admission_arrears > 0:
-        arrears_list.append(ArrearsItem(
-            fee_month="Initial Admission Balance",
-            amount_due=admission_arrears,
-            record_id=0
-        ))
+    total_arrears = round(sum(a.amount_due for a in arrears_list), 2)
 
     return ClearanceResponse(
         student_id=student.id,
@@ -183,7 +181,7 @@ def get_clearance(
         registered_at=student.registered_at,
         joined=student.joined,
         arrears=arrears_list,
-        total_arrears=sum(a.amount_due for a in arrears_list),
+        total_arrears=total_arrears,
         certificate_issued=student.certificate_issued,
         certificate_issued_at=student.certificate_issued_at,
         leaving_date=student.leaving_date,
@@ -196,7 +194,8 @@ def get_clearance(
 def pay_admission_balance(
     student_id: int,
     method: str = Query(..., description="'Cash' or 'Bank'"),
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    _user: str = Depends(verify_credentials),
 ):
     """
     Pays off any remaining 'Initial Admission Balance'.
@@ -242,7 +241,7 @@ def pay_admission_balance(
         status="paid",
         payment_method=method,
         cleared_at=datetime.utcnow(),
-        invoice_id=f"ADM-CLR-{student.id}-{int(datetime.utcnow().timestamp())}"
+        cleared_date=datetime.utcnow().strftime("%Y-%m-%d"),
     )
     session.add(fee_rec)
 
@@ -262,7 +261,8 @@ def pay_admission_balance(
 def issue_certificate(
     student_id: int,
     body: CertificateIssueRequest,
-    session: Session = Depends(get_session)
+    session: Session = Depends(get_session),
+    _user: str = Depends(verify_credentials),
 ):
     """
     Marks certificate(s) as issued on the student record.
@@ -270,6 +270,14 @@ def issue_certificate(
     student = session.get(Student, student_id)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
+
+    # Validate cert_type
+    allowed_cert_types = ("leaving", "character", "both")
+    if body.cert_type not in allowed_cert_types:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid cert_type '{body.cert_type}'. Must be one of: {allowed_cert_types}"
+        )
 
     # Merge with existing type
     existing = student.certificate_issued

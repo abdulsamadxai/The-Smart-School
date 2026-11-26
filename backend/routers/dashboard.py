@@ -13,28 +13,33 @@ def get_stats(
     session: Session = Depends(get_session),
     _user: str = Depends(verify_credentials),
 ):
-    all_students = session.exec(select(Student)).all()
-    total = len(all_students)
+    # Get total count
+    total = session.exec(select(func.count(Student.id))).one()
 
+    # Get counts grouped by stage
+    stage_counts_db = session.exec(
+        select(Student.stage, func.count(Student.id)).group_by(Student.stage)
+    ).all()
+    
     stage_counts = {stage.value: 0 for stage in StageEnum}
-    for s in all_students:
-        stage_counts[s.stage.value] += 1
+    for stage, count in stage_counts_db:
+        # stage might be a string or enum depending on sqlite mapping
+        stage_val = stage.value if hasattr(stage, "value") else stage
+        if stage_val in stage_counts:
+            stage_counts[stage_val] = count
 
-    # Admitted but didn't join (subset of admitted)
-    admitted_not_joined = sum(
-        1 for s in all_students
-        if s.stage == StageEnum.admitted and s.joined is False
-    )
-    # Admitted and joined
-    admitted_joined = sum(
-        1 for s in all_students
-        if s.stage == StageEnum.admitted and s.joined is True
-    )
-    # Admitted, joining not yet confirmed
-    admitted_pending_join = sum(
-        1 for s in all_students
-        if s.stage == StageEnum.admitted and s.joined is None
-    )
+    # Admitted and joined statuses
+    admitted_not_joined = session.exec(
+        select(func.count(Student.id)).where(Student.stage == StageEnum.admitted, Student.joined == False)
+    ).one()
+    
+    admitted_joined = session.exec(
+        select(func.count(Student.id)).where(Student.stage == StageEnum.admitted, Student.joined == True)
+    ).one()
+    
+    admitted_pending_join = session.exec(
+        select(func.count(Student.id)).where(Student.stage == StageEnum.admitted, Student.joined == None)
+    ).one()
 
     return {
         "total": total,

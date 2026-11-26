@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import api from '../api/client'
 import { toast } from 'react-hot-toast'
-import styles from './ChallansPage.module.css'
 
 const fmt = (n) => `Rs. ${Number(n || 0).toLocaleString('en-PK')}`
 const todayDisplay = () => new Date().toLocaleDateString('en-PK', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -25,6 +24,27 @@ function dobInWords(dob) {
 }
 
 const CLASS_ORDER = ['Playgroup', 'Nursery', 'Prep', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10']
+
+function StatCard({ icon, label, value, sub, color, bg }) {
+    return (
+        <div style={{
+            background: bg || 'var(--bg-card)', borderRadius: '14px', padding: '1.35rem 1.5rem',
+            border: '1.5px solid var(--border)', boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+            display: 'flex', flexDirection: 'column', gap: '0.6rem',
+            transition: 'transform 0.18s, box-shadow 0.18s', cursor: 'default',
+        }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 22px rgba(0,0,0,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(0,0,0,0.04)' }}
+        >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                <div style={{ width: 40, height: 40, borderRadius: '10px', background: `${color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', flexShrink: 0 }}>{icon}</div>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
+            </div>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
+            {sub && <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', fontWeight: 500 }}>{sub}</div>}
+        </div>
+    )
+}
 
 export default function CertificatesPage() {
     const [stats, setStats] = useState({ total_eligible: 0, certificates_issued: 0, leaving_issued: 0, character_issued: 0, pending: 0 })
@@ -248,67 +268,55 @@ export default function CertificatesPage() {
         win.document.close()
     }
 
-    // ── Render ────────────────────────────────────────────────────────────
-    const cardStyle = (borderColor) => ({
-        background: 'var(--bg-card)', padding: '1.25rem', borderRadius: '12px',
-        border: '1px solid var(--border)', borderLeft: `4px solid ${borderColor}`,
-        display: 'flex', flexDirection: 'column', gap: '0.25rem',
-    })
 
-    // Check if clearance is met (no dues)
+    // Check if clearance is met (no dues from FeeRecord)
     const hasClearance = selectedStudent && Number(selectedStudent.total_arrears) === 0
     const alreadyIssued = selectedStudent?.certificate_issued
+    const unpaidCount = selectedStudent?.arrears?.length || 0
+    const inp = { padding: '0.68rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', background: 'var(--bg-base)', color: 'var(--text-primary)', outline: 'none', width: '100%' }
 
     return (
-        <div className={styles.page}>
-            <div className={styles.header}>
-                <h1 className={styles.title}>🎓 Issue Certificates</h1>
-                <p className={styles.subtitle}>Robust Control Panel for Leaving and Character Certificates</p>
-            </div>
+        <div style={{ padding: '2rem 2.5rem', minHeight: '100vh', background: 'var(--bg-base, #f4f1ef)' }}>
 
-            {/* Smart Stats Dashboard */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px,1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div style={cardStyle('var(--text-secondary)')}>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>{stats.total_eligible}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Students</div>
-                </div>
-                <div style={cardStyle('#10b981')}>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10b981' }}>{stats.certificates_issued}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Certs Issued</div>
-                </div>
-                <div style={cardStyle('#7c3aed')}>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#7c3aed' }}>{stats.leaving_issued}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Leaving Certs</div>
-                </div>
-                <div style={cardStyle('#0ea5e9')}>
-                    <div style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0ea5e9' }}>{stats.character_issued}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Character Certs</div>
+            {/* Page Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1.75rem' }}>
+                <div style={{ width: 46, height: 46, borderRadius: '11px', background: 'linear-gradient(135deg, #8B1A1A, #cf2e2e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', color: '#fff', flexShrink: 0, boxShadow: '0 4px 12px rgba(139,26,26,0.25)' }}>🎓</div>
+                <div>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Certificate Issuance</h1>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Issue Leaving &amp; Character Certificates — outstanding dues verified from Fee Records</p>
                 </div>
             </div>
 
-            {/* Manual Search Form */}
-            <div className={styles.formCard} style={{ marginBottom: '1.5rem' }}>
+            {/* Stats Cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: '1rem', marginBottom: '1.75rem' }}>
+                <StatCard icon="🧑‍🎓" label="Eligible Students" value={stats.total_eligible} sub="Admitted or joined" color="#6366f1" bg="linear-gradient(145deg,#fff 0%,#f5f3ff 100%)" />
+                <StatCard icon="📋" label="Leaving Certs" value={stats.leaving_issued} sub="School leaving certificates issued" color="#7c3aed" bg="linear-gradient(145deg,#fff 0%,#faf5ff 100%)" />
+                <StatCard icon="🏅" label="Character Certs" value={stats.character_issued} sub="Character certificates issued" color="#0ea5e9" bg="linear-gradient(145deg,#fff 0%,#f0f9ff 100%)" />
+                <StatCard icon="✅" label="Total Issued" value={stats.certificates_issued} sub="All certificate types combined" color="#10b981" bg="linear-gradient(145deg,#fff 0%,#f0fdf4 100%)" />
+                <StatCard icon="⏳" label="Pending Issuance" value={stats.pending} sub="Students without any certificate" color={stats.pending > 0 ? '#f59e0b' : '#10b981'} bg="linear-gradient(145deg,#fff 0%,#fffbeb 100%)" />
+            </div>
+
+            {/* Search Panel */}
+            <div style={{ background: 'var(--bg-card)', borderRadius: '14px', padding: '1.5rem', border: '1px solid var(--border)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', marginBottom: '1.5rem' }}>
+                <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--text-primary)', marginBottom: '1rem' }}>🔍 Find Student</div>
                 <form onSubmit={handleSearch} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                    <div className={styles.formGroup} style={{ marginBottom: 0, minWidth: '150px' }}>
-                        <label>🎓 Filter by Class</label>
-                        <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
-                            <option value="">-- All Classes --</option>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', minWidth: '160px' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Filter by Class</label>
+                        <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} style={inp}>
+                            <option value="">— All Classes —</option>
                             {CLASS_ORDER.map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                     </div>
-                    <div className={styles.formGroup} style={{ marginBottom: 0, flex: 1, minWidth: '250px' }}>
-                        <label>🔍 Find Student (Name or GR Number)</label>
-                        <input
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            placeholder="Type name or exact GR number..."
-                        />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', flex: 1, minWidth: '260px' }}>
+                        <label style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Name or GR Number</label>
+                        <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Type student name or GR number…" style={inp} />
                     </div>
-                    <button type="submit" disabled={searching} className={styles.primaryBtn} style={{ padding: '0.7rem 1.7rem', height: '100%', marginBottom: '2px' }}>
-                        {searching ? '🔎 Searching...' : '🔎 Search'}
+                    <button type="submit" disabled={searching} style={{ padding: '0.68rem 1.6rem', borderRadius: '8px', background: 'var(--brand-red-dark, #8B1A1A)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', opacity: searching ? 0.7 : 1 }}>
+                        {searching ? '🔎 Searching…' : '🔎 Search'}
                     </button>
                     {(hasSearched || selectedStudent) && (
-                        <button type="button" onClick={() => { setSearchResults([]); setHasSearched(false); setSelectedStudent(null); setSearchQuery(''); setSelectedClass(''); }} style={{ padding: '0.7rem 1.2rem', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer', height: '100%', marginBottom: '2px' }}>
+                        <button type="button" onClick={() => { setSearchResults([]); setHasSearched(false); setSelectedStudent(null); setSearchQuery(''); setSelectedClass('') }}
+                            style={{ padding: '0.68rem 1rem', borderRadius: '8px', background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}>
                             ✖ Clear
                         </button>
                     )}
@@ -316,36 +324,34 @@ export default function CertificatesPage() {
 
                 {/* Search Results Table */}
                 {searchResults.length > 0 && !selectedStudent && (
-                    <div style={{ marginTop: '1.5rem' }}>
-                        <h4 style={{ marginBottom: '0.75rem', color: 'var(--text-secondary)' }}>Search Results ({searchResults.length})</h4>
-                        <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                    <div style={{ marginTop: '1.4rem' }}>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            {searchResults.length} student{searchResults.length !== 1 ? 's' : ''} found
+                        </div>
+                        <div style={{ overflowX: 'auto', border: '1px solid var(--border)', borderRadius: '10px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                <thead style={{ background: 'var(--bg-primary)', borderBottom: '2px solid var(--border)' }}>
-                                    <tr>
-                                        <th style={{ padding: '0.8rem 1rem' }}>Name</th>
-                                        <th style={{ padding: '0.8rem 1rem' }}>GR Num</th>
-                                        <th style={{ padding: '0.8rem 1rem' }}>Class</th>
-                                        <th style={{ padding: '0.8rem 1rem' }}>Cert Status</th>
-                                        <th style={{ padding: '0.8rem 1rem', textAlign: 'right' }}>Action</th>
+                                <thead>
+                                    <tr style={{ background: 'var(--bg-base)', borderBottom: '2px solid var(--border)' }}>
+                                        {['Student Name', 'GR Number', 'Class', 'Certificate Status', ''].map(h => (
+                                            <th key={h} style={{ padding: '0.65rem 1rem', fontSize: '0.73rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {searchResults.map(s => (
-                                        <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                            <td style={{ padding: '0.8rem 1rem', fontWeight: 600 }}>{s.name}</td>
-                                            <td style={{ padding: '0.8rem 1rem' }}>{s.gr_number || '—'}</td>
-                                            <td style={{ padding: '0.8rem 1rem' }}>{s.class_enrolled || s.class_applied_for}</td>
-                                            <td style={{ padding: '0.8rem 1rem' }}>
-                                                {s.certificate_issued ? (
-                                                    <span style={{ background: 'rgba(124,58,237,0.1)', color: '#7c3aed', padding: '3px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 700 }}>
-                                                        {s.certificate_issued.toUpperCase()} ISSUED
-                                                    </span>
-                                                ) : <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>None</span>}
+                                        <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-base)'}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                            <td style={{ padding: '0.72rem 1rem', fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</td>
+                                            <td style={{ padding: '0.72rem 1rem', color: 'var(--text-secondary)', fontFamily: 'monospace' }}>{s.gr_number || '—'}</td>
+                                            <td style={{ padding: '0.72rem 1rem', color: 'var(--text-secondary)' }}>{s.class_enrolled || s.class_applied_for}</td>
+                                            <td style={{ padding: '0.72rem 1rem' }}>
+                                                {s.certificate_issued
+                                                    ? <span style={{ background: 'rgba(16,185,129,0.1)', color: '#059669', padding: '3px 9px', borderRadius: '6px', fontSize: '0.76rem', fontWeight: 700 }}>✅ {s.certificate_issued.toUpperCase()}</span>
+                                                    : <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Not Issued</span>}
                                             </td>
-                                            <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}>
-                                                <button onClick={() => loadClearance(s.id)} style={{ padding: '0.4rem 1rem', background: '#111', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }}>
-                                                    Select →
-                                                </button>
+                                            <td style={{ padding: '0.72rem 1rem', textAlign: 'right' }}>
+                                                <button onClick={() => loadClearance(s.id)} style={{ padding: '0.36rem 1rem', background: '#111', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem' }}>Open →</button>
                                             </td>
                                         </tr>
                                     ))}
@@ -357,127 +363,161 @@ export default function CertificatesPage() {
             </div>
 
             {loadingClearance && (
-                <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-                    <div className="spinner" style={{ margin: '0 auto 1rem' }} /> Loading Clearance Data...
+                <div style={{ textAlign: 'center', padding: '4rem 2rem', color: 'var(--text-muted)' }}>
+                    <div className="spinner" style={{ margin: '0 auto 1rem' }} />
+                    Loading student clearance data…
                 </div>
             )}
 
-            {/* Clearance & Issuance Dashboard */}
+            {/* Student Clearance & Certificate Panel */}
             {selectedStudent && !loadingClearance && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-                    {/* Status Overview Card */}
-                    <div className={styles.formCard} style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <div style={{ flex: 1, minWidth: '250px' }}>
-                            <div style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.2rem', color: 'var(--brand-red)' }}>{selectedStudent.name}</div>
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-                                GR: <strong>{selectedStudent.gr_number || '—'}</strong> &nbsp;|&nbsp;
-                                Class: <strong>{selectedStudent.class_enrolled || selectedStudent.class_applied_for}</strong> &nbsp;|&nbsp;
-                                Father: <strong>{selectedStudent.father_name || '—'}</strong>
+                    {/* Student Identity Banner */}
+                    <div style={{ background: 'var(--bg-card)', borderRadius: '14px', padding: '1.25rem 1.5rem', border: '1px solid var(--border)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, #8B1A1A, #cf2e2e)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', color: '#fff', fontWeight: 800, flexShrink: 0 }}>
+                                {selectedStudent.name?.charAt(0)?.toUpperCase()}
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-primary)' }}>{selectedStudent.name}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.15rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                    <span>GR: <strong style={{ color: 'var(--text-secondary)' }}>{selectedStudent.gr_number || '—'}</strong></span>
+                                    <span>Class: <strong style={{ color: 'var(--text-secondary)' }}>{selectedStudent.class_enrolled || selectedStudent.class_applied_for}</strong></span>
+                                    <span>Father: <strong style={{ color: 'var(--text-secondary)' }}>{selectedStudent.father_name || '—'}</strong></span>
+                                </div>
                             </div>
                         </div>
-                        <div style={{ padding: '1rem 1.5rem', background: hasClearance ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', borderRadius: '8px', border: `1px solid ${hasClearance ? '#10b981' : '#ef4444'}`, display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            <div style={{ fontSize: '2.5rem' }}>{hasClearance ? '✅' : '⚠️'}</div>
+                        <div style={{ padding: '0.85rem 1.3rem', borderRadius: '10px', background: hasClearance ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)', border: `1.5px solid ${hasClearance ? '#10b981' : '#ef4444'}`, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ fontSize: '1.8rem' }}>{hasClearance ? '✅' : '⚠️'}</div>
                             <div>
-                                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: hasClearance ? '#065f46' : '#991b1b' }}>
-                                    {hasClearance ? 'Clearance Granted' : `Outstanding Dues: ${fmt(selectedStudent.total_arrears)}`}
+                                <div style={{ fontSize: '0.92rem', fontWeight: 800, color: hasClearance ? '#065f46' : '#991b1b' }}>
+                                    {hasClearance ? 'Clearance Granted' : `Dues: ${fmt(selectedStudent.total_arrears)}`}
                                 </div>
-                                <div style={{ fontSize: '0.85rem', color: hasClearance ? '#047857' : '#b91c1c' }}>
-                                    {hasClearance ? 'Eligible to issue certificates' : `Student has ${selectedStudent.arrears.length} unpaid month(s)`}
+                                <div style={{ fontSize: '0.75rem', color: hasClearance ? '#047857' : '#b91c1c', marginTop: '0.1rem' }}>
+                                    {hasClearance ? 'No pending fees — eligible to issue certificates' : `${unpaidCount} unpaid record${unpaidCount !== 1 ? 's' : ''} found in Fee Records`}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Dues List */}
+                    {/* Outstanding Dues Section — only shown when unpaid FeeRecords exist */}
                     {!hasClearance && (
-                        <div className={styles.formCard}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                                <h3 style={{ fontSize: '1.1rem', color: '#991b1b' }}>Unpaid Fee Months (Clearance Pending)</h3>
-                                <button onClick={() => printClearanceChallan(selectedStudent)} style={{ padding: '0.5rem 1rem', background: '#991b1b', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}>
-                                    🖨️ Print Dues Challan
+                        <div style={{ background: 'var(--bg-card)', borderRadius: '14px', padding: '1.5rem', border: '1.5px solid #fca5a5', boxShadow: '0 2px 8px rgba(239,68,68,0.06)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.98rem', fontWeight: 800, color: '#991b1b' }}>🔴 Outstanding Fee Dues</div>
+                                    <div style={{ fontSize: '0.76rem', color: '#b91c1c', marginTop: '0.2rem' }}>
+                                        Source: Fee Records — only unpaid monthly fees &amp; arrear entries are listed
+                                    </div>
+                                </div>
+                                <button onClick={() => printDuesChallan(selectedStudent)}
+                                    style={{ padding: '0.5rem 1.1rem', background: '#991b1b', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '0.84rem' }}>
+                                    🖨️ Generate Fee Dues Challan
                                 </button>
                             </div>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                                <tbody>
-                                    {selectedStudent.arrears.map(a => (
-                                        <tr key={a.record_id} style={{ borderBottom: '1px solid var(--border)' }}>
-                                            <td style={{ padding: '0.8rem 0', fontWeight: 600 }}>{a.fee_month}</td>
-                                            <td style={{ padding: '0.8rem 0', textAlign: 'right', color: '#991b1b', fontWeight: 800 }}>{fmt(a.amount_due)}</td>
-                                            <td style={{ padding: '0.8rem 0', textAlign: 'right', width: '140px' }}>
-                                                <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
-                                                    <button onClick={() => a.record_id > 0 ? markNormalFeePaid(a.record_id, 'Cash') : markAdmissionBalancePaid('Cash')} style={{ padding: '0.3rem 0.6rem', background: '#dcfce7', border: '1px solid #86efac', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: '#166534', fontWeight: 600 }}>
-                                                        💵 Cash
-                                                    </button>
-                                                    <button onClick={() => a.record_id > 0 ? markNormalFeePaid(a.record_id, 'Bank') : markAdmissionBalancePaid('Bank')} style={{ padding: '0.3rem 0.6rem', background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', color: '#1e40af', fontWeight: 600 }}>
-                                                        🏦 Bank
-                                                    </button>
-                                                </div>
-                                            </td>
+                            <div style={{ overflowX: 'auto', border: '1px solid #fca5a5', borderRadius: '8px' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                                    <thead>
+                                        <tr style={{ background: '#fef2f2', borderBottom: '1.5px solid #fca5a5' }}>
+                                            <th style={{ padding: '0.65rem 1rem', fontSize: '0.73rem', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Fee Month / Description</th>
+                                            <th style={{ padding: '0.65rem 1rem', fontSize: '0.73rem', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right' }}>Amount Due</th>
+                                            <th style={{ padding: '0.65rem 1rem', fontSize: '0.73rem', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'right', width: '160px' }}>Mark Paid</th>
                                         </tr>
-                                    ))}
-                                    <tr style={{ borderTop: '2px solid var(--border)' }}>
-                                        <td style={{ padding: '1rem 0', fontWeight: 800, fontSize: '1.1rem' }}>TOTAL DUE</td>
-                                        <td style={{ padding: '1rem 0', textAlign: 'right', color: '#991b1b', fontWeight: 800, fontSize: '1.1rem' }}>{fmt(selectedStudent.total_arrears)}</td>
-                                        <td></td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        {selectedStudent.arrears.map((a, idx) => (
+                                            <tr key={a.record_id} style={{ borderBottom: '1px solid #fecaca', background: idx % 2 === 0 ? 'transparent' : '#fff5f5' }}>
+                                                <td style={{ padding: '0.72rem 1rem', fontWeight: 600, color: 'var(--text-primary)' }}>{a.fee_month}</td>
+                                                <td style={{ padding: '0.72rem 1rem', textAlign: 'right', color: '#991b1b', fontWeight: 800, fontSize: '0.93rem' }}>{fmt(a.amount_due)}</td>
+                                                <td style={{ padding: '0.72rem 1rem', textAlign: 'right' }}>
+                                                    <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+                                                        <button onClick={() => a.record_id > 0 ? markFeePaid(a.record_id, 'Cash') : markAdmissionBalancePaid('Cash')}
+                                                            style={{ padding: '0.3rem 0.7rem', background: '#dcfce7', border: '1px solid #86efac', borderRadius: '5px', cursor: 'pointer', fontSize: '0.78rem', color: '#166534', fontWeight: 700 }}>💵 Cash</button>
+                                                        <button onClick={() => a.record_id > 0 ? markFeePaid(a.record_id, 'Bank') : markAdmissionBalancePaid('Bank')}
+                                                            style={{ padding: '0.3rem 0.7rem', background: '#dbeafe', border: '1px solid #93c5fd', borderRadius: '5px', cursor: 'pointer', fontSize: '0.78rem', color: '#1e40af', fontWeight: 700 }}>🏦 Bank</button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr style={{ borderTop: '2px solid #fca5a5', background: '#fef2f2' }}>
+                                            <td style={{ padding: '0.82rem 1rem', fontWeight: 800, fontSize: '0.93rem', color: '#991b1b' }}>TOTAL OUTSTANDING DUES</td>
+                                            <td style={{ padding: '0.82rem 1rem', textAlign: 'right', fontWeight: 900, fontSize: '1rem', color: '#991b1b' }}>{fmt(selectedStudent.total_arrears)}</td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div style={{ marginTop: '0.8rem', padding: '0.6rem 0.95rem', background: '#fff3cd', border: '1px solid #fbbf24', borderRadius: '6px', fontSize: '0.78rem', color: '#92400e' }}>
+                                ⚠️ <strong>Note:</strong> Certificate issuance is locked until all outstanding dues are cleared. Mark dues as paid above or print the challan for the fee collection desk.
+                            </div>
                         </div>
                     )}
 
-                    {/* Issuance Form */}
-                    <div className={styles.formCard} style={{ opacity: hasClearance ? 1 : 0.6, pointerEvents: hasClearance ? 'auto' : 'none' }}>
-                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
-                            🎓 Issue Official Certificates
-                        </h3>
+                    {/* Certificate Issuance Form */}
+                    <div style={{ background: 'var(--bg-card)', borderRadius: '14px', padding: '1.5rem', border: `1.5px solid ${hasClearance ? 'rgba(16,185,129,0.3)' : 'var(--border)'}`, boxShadow: '0 2px 8px rgba(0,0,0,0.04)', opacity: hasClearance ? 1 : 0.5, pointerEvents: hasClearance ? 'auto' : 'none', transition: 'opacity 0.3s' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.2rem', paddingBottom: '0.8rem', borderBottom: '1px solid var(--border)' }}>
+                            <span>🎓</span>
+                            <h3 style={{ fontSize: '0.98rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Issue Official Certificates</h3>
+                            {!hasClearance && (
+                                <span style={{ marginLeft: 'auto', fontSize: '0.73rem', fontWeight: 600, color: '#b91c1c', background: '#fef2f2', padding: '3px 9px', borderRadius: '6px', border: '1px solid #fca5a5' }}>
+                                    🔒 Locked — Clear dues first
+                                </span>
+                            )}
+                        </div>
 
                         {alreadyIssued && (
-                            <div style={{ padding: '1rem', background: '#f8fafc', borderLeft: '4px solid #3b82f6', marginBottom: '1.5rem', borderRadius: '0 8px 8px 0' }}>
-                                <p style={{ fontWeight: 600, color: '#1e40af', marginBottom: '0.5rem' }}>ⓘ Previously Issued: {alreadyIssued.toUpperCase()}</p>
-                                <div style={{ display: 'flex', gap: '0.75rem' }}>
+                            <div style={{ padding: '0.85rem 1.1rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '8px', marginBottom: '1.2rem' }}>
+                                <div style={{ fontWeight: 700, color: '#1e40af', marginBottom: '0.5rem', fontSize: '0.86rem' }}>
+                                    ℹ️ Previously Issued: <span style={{ textTransform: 'uppercase' }}>{alreadyIssued}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
                                     {(alreadyIssued === 'leaving' || alreadyIssued === 'both') && (
-                                        <button onClick={() => printCert('leaving', selectedStudent)} style={{ padding: '0.4rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}>🖨️ Reprint Leaving Cert</button>
+                                        <button onClick={() => printCert('leaving', selectedStudent)} style={{ padding: '0.36rem 1rem', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>🖨️ Reprint Leaving Certificate</button>
                                     )}
                                     {(alreadyIssued === 'character' || alreadyIssued === 'both') && (
-                                        <button onClick={() => printCert('character', selectedStudent)} style={{ padding: '0.4rem 1rem', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}>🖨️ Reprint Character Cert</button>
+                                        <button onClick={() => printCert('character', selectedStudent)} style={{ padding: '0.36rem 1rem', background: '#0ea5e9', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>🖨️ Reprint Character Certificate</button>
                                     )}
                                 </div>
                             </div>
                         )}
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                            <div className={styles.formGroup}>
-                                <label>Select Certificate to Issue</label>
-                                <select value={certType} onChange={e => setCertType(e.target.value)} style={{ padding: '0.8rem', fontSize: '1rem' }}>
-                                    <option value="leaving">📋 Leaving Certificate</option>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                <label style={{ fontSize: '0.73rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Certificate Type</label>
+                                <select value={certType} onChange={e => setCertType(e.target.value)} style={inp}>
+                                    <option value="leaving">📋 School Leaving Certificate</option>
                                     <option value="character">🏅 Character Certificate</option>
                                     <option value="both">📋 + 🏅 Both Certificates</option>
                                 </select>
                             </div>
-                            <div className={styles.formGroup}>
-                                <label>Conduct / Character Remark</label>
-                                <select value={conduct} onChange={e => setConduct(e.target.value)} style={{ padding: '0.8rem', fontSize: '1rem' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                <label style={{ fontSize: '0.73rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Conduct &amp; Character</label>
+                                <select value={conduct} onChange={e => setConduct(e.target.value)} style={inp}>
                                     {['Excellent', 'Very Good', 'Good', 'Satisfactory'].map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
-                            <div className={styles.formGroup}>
-                                <label>Official Leaving Date</label>
-                                <input type="date" value={leavingDate} onChange={e => setLeavingDate(e.target.value)} style={{ padding: '0.8rem' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                <label style={{ fontSize: '0.73rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Official Leaving Date</label>
+                                <input type="date" value={leavingDate} onChange={e => setLeavingDate(e.target.value)} style={inp} />
                             </div>
-                            <div className={styles.formGroup}>
-                                <label>Reason for Leaving</label>
-                                <input value={leavingReason} onChange={e => setLeavingReason(e.target.value)} placeholder="e.g. Migration, Graduated..." style={{ padding: '0.8rem' }} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                <label style={{ fontSize: '0.73rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Reason for Leaving</label>
+                                <input value={leavingReason} onChange={e => setLeavingReason(e.target.value)} placeholder="e.g. Migration, Graduated, Transfer…" style={inp} />
                             </div>
                         </div>
 
-                        <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem' }}>
-                            <button onClick={issueCert} disabled={issuing || !hasClearance} style={{ padding: '0.9rem 2rem', background: '#111', color: '#fff', border: 'none', borderRadius: '8px', cursor: hasClearance ? 'pointer' : 'not-allowed', fontWeight: 800, fontSize: '1rem' }}>
-                                {issuing ? 'Saving...' : '💾 Save to Record & Print Certificates'}
+                        <div style={{ display: 'flex', gap: '0.85rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <button onClick={issueCert} disabled={issuing || !hasClearance}
+                                style={{ padding: '0.82rem 1.75rem', background: 'linear-gradient(135deg, #8B1A1A, #cf2e2e)', color: '#fff', border: 'none', borderRadius: '9px', cursor: hasClearance ? 'pointer' : 'not-allowed', fontWeight: 800, fontSize: '0.93rem', boxShadow: '0 4px 14px rgba(139,26,26,0.25)', opacity: issuing ? 0.7 : 1 }}>
+                                {issuing ? '💾 Saving…' : '💾 Issue & Print Certificate'}
                             </button>
                             {hasClearance && (
-                                <button onClick={() => printClearanceChallan(selectedStudent)} style={{ padding: '0.9rem 1.5rem', background: 'transparent', color: '#111', border: '2px solid #111', borderRadius: '8px', cursor: 'pointer', fontWeight: 800, fontSize: '1rem' }}>
-                                    🖨️ Print Final Clearance
+                                <button onClick={() => printClearanceCert(selectedStudent)}
+                                    style={{ padding: '0.82rem 1.4rem', background: 'transparent', color: '#065f46', border: '1.5px solid #10b981', borderRadius: '9px', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem' }}>
+                                    🖨️ Print No-Dues Clearance
                                 </button>
                             )}
                         </div>

@@ -55,3 +55,5 @@ venv.bak/
 .Trashes
 ehthumbs.db
 Thumbs.db
+.vercel
+.env*

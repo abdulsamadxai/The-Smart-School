@@ -16,6 +16,15 @@ engine = create_engine(DATABASE_URL, echo=False, connect_args=connect_args)
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
+    try:
+        from sqlalchemy import text
+        with Session(engine) as session:
+            cols = [r[1] for r in session.exec(text("PRAGMA table_info(fee_records)")).all()]
+            if cols and "cleared_date" not in cols:
+                session.exec(text("ALTER TABLE fee_records ADD COLUMN cleared_date VARCHAR"))
+                session.commit()
+    except Exception as e:
+        print(f"Migration notice: {e}")
 
 
 def get_session():
