@@ -26,3 +26,22 @@
 .tableWrap {
     overflow-x: auto;
 }
+
+.tableWrap table {
+    min-width: 560px;
+}
+
+@media (max-width: 768px) {
+    .page {
+        padding: 1rem 0.75rem 2rem;
+    }
+
+    .header {
+        flex-wrap: wrap;
+    }
+
+    .header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
