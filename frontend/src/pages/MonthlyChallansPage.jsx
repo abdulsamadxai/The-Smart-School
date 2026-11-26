@@ -77,7 +77,7 @@ export default function MonthlyChallansPage() {
                 }
             }))
             setBatchData(rows)
-        } catch (err) {
+        } catch {
             toast.error('Failed to fetch arrears')
             // Fallback if arrears fails
             setBatchData(studentsInClass.map(s => ({
@@ -139,7 +139,7 @@ export default function MonthlyChallansPage() {
             await api.post('/fees/batch-save', payload)
             toast.success('Fee Records Saved!')
             return true
-        } catch (e) {
+        } catch {
             toast.error('Failed to sync fee records with database')
             return false
         }
