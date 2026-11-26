@@ -13,7 +13,7 @@ export default function RegisterModal({ onClose, onSuccess }) {
 
     function update(k, v) { setForm(f => ({ ...f, [k]: v })) }
 
-    async function submit(e, force = false) {
+    async function submit(e, _force = false) {
         e?.preventDefault()
         if (!form.name || !form.class_applied_for || !form.date_of_birth || !form.father_contact_number || !form.parent_name) {
             return toast.error('All fields marked * are required')
