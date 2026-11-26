@@ -428,7 +428,7 @@ export default function FeeRecordPage() {
                 </div>
             ) : (
                 <div className={styles.formCard} style={{ padding: 0, overflow: 'hidden' }}>
-                    <div style={{ overflowX: 'auto' }}>
+                    <div className="table-scroll" style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                             <thead>
                                 <tr style={{ borderBottom: '2px solid var(--border)', background: 'var(--bg-primary)' }}>
