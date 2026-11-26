@@ -25,7 +25,7 @@ function DirectorRoute({ children }) {
 }
 
 function App() {
-  const [authed, setAuthed] = useState(hasCredentials())
+  const [_authed, setAuthed] = useState(hasCredentials())
 
   return (
     <BrowserRouter>
