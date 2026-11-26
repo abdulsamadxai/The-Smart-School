@@ -1,0 +1,41 @@
+services:
+  # FastAPI backend (Python). Serves the API on /health, /students, /fees, ...
+  # The frontend is deployed separately on Vercel (see frontend/vercel.json
+  # and DEPLOY.md); the backend only needs to allow its origin.
+  - type: web
+    name: smart-school-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: ENVIRONMENT
+        value: production
+      # Supabase Postgres URL with the ROTATED password (the old one was
+      # leaked in the repo and has been changed). Set it in the Render
+      # dashboard; never put a real password in this file.
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: DIRECTOR_USERNAME
+        value: director
+      - key: DIRECTOR_PASSWORD
+        sync: false
+      - key: CASH_ADMIN_USERNAME
+        value: cash_admin
+      - key: CASH_ADMIN_PASSWORD
+        sync: false
+      - key: BANK_ADMIN_USERNAME
+        value: bank_admin
+      - key: BANK_ADMIN_PASSWORD
+        sync: false
+      # Must match the real frontend URL (update if Vercel gives the app a
+      # different hostname).
+      - key: ALLOWED_ORIGINS
+        value: https://the-smart-school.vercel.app
