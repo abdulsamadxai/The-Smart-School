@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone, date
 
 from database import get_session
 from models import (
@@ -179,9 +179,17 @@ def toggle_fee_status(
     record = session.get(FeeRecord, record_id)
     if not record:
         raise HTTPException(status_code=404, detail="Fee record not found")
+    if cleared_date is not None:
+        try:
+            date.fromisoformat(cleared_date)
+        except ValueError:
+            raise HTTPException(
+                status_code=422,
+                detail="cleared_date must be a valid date in YYYY-MM-DD format",
+            )
 
     if record.status == "unpaid":
-        now = datetime.now()
+        now = datetime.now(timezone.utc)
         record.status = "paid"
         record.cleared_at = now
         record.payment_method = payment_method  # Store Cash or Bank
@@ -222,7 +230,7 @@ def record_daily_slip_print(
         DailySlip.payment_method == req.payment_method
     )
     existing = session.exec(statement).first()
-    now = datetime.now()
+    now = datetime.now(timezone.utc)
 
     if existing:
         existing.total_amount = req.total_amount
