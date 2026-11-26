@@ -45,7 +45,12 @@ api.interceptors.response.use(
     (err) => {
         if (err.response?.status === 401) {
             clearCredentials()
-            window.location.reload()
+            // Don't reload: a reload wipes the login page's "Invalid credentials"
+            // message before the user can see it. Just send the user to /login
+            // (unless they are already there, so the login form can show its error).
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login'
+            }
         }
         return Promise.reject(err)
     }
@@ -70,16 +75,11 @@ export const deleteCriterion = (id) => api.delete(`/criteria/${id}`)
 // Dashboard
 export const getDashboardStats = () => api.get('/dashboard/stats')
 
-// Export
-export const getExportUrl = () => {
-    const user = sessionStorage.getItem('auth_user') || ''
-    const pass = sessionStorage.getItem('auth_pass') || ''
-    const url = new URL(`${BASE_URL}/students/export/csv`)
-    url.username = user
-    url.password = pass
-    return `${BASE_URL}/students/export/csv`
-}
+// Daily slips
+export const recordDailySlipPrint = (data) => api.post('/fees/daily-slips/record-print', data)
+export const getDailySlips = (date) => api.get('/fees/daily-slips', { params: date ? { date } : {} })
 
+// Export
 export const exportCSV = () => {
     return api.get('/students/export/csv', { responseType: 'blob' })
 }
