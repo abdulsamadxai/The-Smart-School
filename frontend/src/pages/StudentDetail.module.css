@@ -225,4 +225,21 @@
     .grid {
         grid-template-columns: 1fr;
     }
+
+    .page {
+        padding: 1rem 0.75rem 2rem;
+    }
+
+    .topBar {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .section {
+        padding: 1rem;
+    }
+
+    .profileCard {
+        padding: 1.25rem 1rem;
+    }
 }
