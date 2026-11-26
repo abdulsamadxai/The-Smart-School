@@ -8,7 +8,7 @@ Usage:
 
 import sys
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlmodel import Session, select
 
 # Must run from the backend/ directory so imports resolve correctly
@@ -32,7 +32,7 @@ CRITERIA = [
     {"class_name": "Grade 10",  "min_age_years": 14.0, "max_age_years": 15.5},
 ]
 
-NOW = datetime.utcnow()
+NOW = datetime.now(timezone.utc)
 today_str = NOW.strftime("%Y-%m-%d")
 year = NOW.year
 
@@ -47,7 +47,7 @@ def make_admitted(name, cls, age, contact, gr_idx, days_ago=30):
         "name": name,
         "class_applied_for": cls,
         "date_of_birth": dob_for_age(age),
-        "contact_number": contact,
+        "father_contact_number": contact,
         "stage": StageEnum.admitted,
         "age_at_registration": age,
         "criteria_note": f"Age {age} years — eligible for {cls}.",
