@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { clearCredentials, getRole } from '../api/client'
 import styles from './Layout.module.css'
 
 export default function Layout() {
     const navigate = useNavigate()
-    const [menuOpen, setMenuOpen] = useState(false)
     const role = getRole()
 
     function handleLogout() {
