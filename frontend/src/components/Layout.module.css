@@ -105,3 +105,75 @@
     overflow-x: hidden;
     background: var(--bg-base);
 }
+
+.menuBtn {
+    display: none;
+}
+
+/* ---- Mobile: sidebar becomes a sticky top bar with hamburger ---- */
+@media (max-width: 768px) {
+    .app {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-width: 0;
+        position: sticky;
+        top: 0;
+        border-right: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    }
+
+    .brand {
+        padding: 0.5rem 1rem;
+        margin-bottom: 0;
+        border-bottom: none;
+    }
+
+    .menuBtn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        margin-left: auto;
+        border-radius: var(--radius);
+        font-size: 1.25rem;
+        color: var(--brand-red-dark);
+        flex-shrink: 0;
+    }
+
+    .menuBtn:hover {
+        background: rgba(139, 26, 26, 0.08);
+    }
+
+    .nav {
+        display: none;
+        padding: 0.25rem 0.75rem 0.75rem;
+    }
+
+    .navOpen {
+        display: flex;
+    }
+
+    .navItem {
+        min-height: 44px;
+    }
+
+    .logoutBtn {
+        display: none;
+    }
+
+    .logoutBtnOpen {
+        display: flex;
+        min-height: 44px;
+    }
+
+    .main {
+        overflow: visible;
+    }
+}
